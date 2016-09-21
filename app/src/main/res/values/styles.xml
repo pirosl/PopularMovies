@@ -1,0 +1,66 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="@style/Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <!-- Settings activity theme. -->
+    <style name="SettingsTheme" parent="AppTheme">
+    </style>
+
+    <!-- Style to be used on movie title -->
+    <style name="Title" parent="@android:style/TextAppearance.Large.Inverse">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@color/colorAccent</item>
+        <item name="android:typeface">monospace</item>
+        <item name="android:paddingLeft">@dimen/layout_horizontal_padding</item>
+        <item name="android:paddingRight">@dimen/layout_horizontal_padding</item>
+        <item name="android:paddingTop">@dimen/layout_vertical_2padding</item>
+        <item name="android:paddingBottom">@dimen/layout_vertical_2padding</item>
+    </style>
+
+    <!-- Style to be used for fields - like release date -->
+    <style name="Header" parent="@android:style/TextAppearance.Medium">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:typeface">monospace</item>
+        <item name="android:textColor">@color/colorPrimaryText</item>
+        <item name="android:paddingBottom">@dimen/layout_vertical_margin</item>
+    </style>
+
+    <!-- Style to be used for fields - like release date -->
+    <style name="Body" parent="@android:style/TextAppearance.DeviceDefault">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:typeface">monospace</item>
+        <item name="android:textColor">@color/colorPrimaryText</item>
+        <item name="android:layout_gravity">fill</item>
+    </style>
+
+    <style name="LayoutMargins" >
+        <item name="android:paddingBottom">@dimen/layout_vertical_margin</item>
+        <item name="android:paddingLeft">@dimen/layout_horizontal_margin</item>
+        <item name="android:paddingRight">@dimen/layout_horizontal_margin</item>
+        <item name="android:paddingTop">@dimen/layout_vertical_margin</item>
+    </style>
+
+    <!-- Style to be used on ImageView -->
+    <style name="ImageView">
+        <item name="android:scaleType">fitXY</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:layout_centerInParent">true</item>
+    </style>
+
+    <!-- Style to be used on Movies Grid View -->
+    <style name="MoviesGridView">
+        <item name="android:verticalSpacing">3dp</item>
+        <item name="android:horizontalSpacing">3dp</item>
+        <item name="android:stretchMode">columnWidth</item>
+        <item name="android:gravity">center</item>
+    </style>
+</resources>

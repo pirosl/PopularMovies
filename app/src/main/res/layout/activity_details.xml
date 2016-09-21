@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <TextView
+        android:id="@+id/movietitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/Title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        style="@style/LayoutMargins">
+        <ImageView
+            android:id="@+id/movieposter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            style="@style/ImageView" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_weight="0.5"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/layout_horizontal_margin">
+            <TextView
+                android:id="@+id/releasedate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/Header" />
+            <RatingBar
+                android:id="@+id/userrating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="?android:attr/ratingBarStyleSmall"
+                android:paddingBottom="@dimen/layout_vertical_padding"
+                android:gravity="left"
+                android:numStars="5"
+                android:stepSize="0.02" />
+        </LinearLayout>
+    </LinearLayout>
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/LayoutMargins">
+        <TextView
+            android:id="@+id/moviesynopsis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Body"/>
+    </FrameLayout>
+
+</LinearLayout>
