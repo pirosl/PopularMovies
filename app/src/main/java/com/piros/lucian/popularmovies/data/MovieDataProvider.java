@@ -146,8 +146,8 @@ public class MovieDataProvider {
     /**
      * Fetch movie poster. Once movie poster is fetched, bitmap is loaded both on provided ImageView and Movie
      *
-     * @param movie
-     * @param imageView
+     * @param movie Movie for which image should be fetched
+     * @param imageView ImageView where fetched imaged will be pushed into
      */
     public void fetchMoviePoster(Movie movie, ImageView imageView) {
         MovieTarget movieTarget = new MovieTarget(movie, imageView);
@@ -159,7 +159,11 @@ public class MovieDataProvider {
         picassoMovieTargets.put(movie.getOriginalTitle(), movieTarget);
 
         // load bitmap into MovieTarget class
-        Picasso.with(context).load(BuildConfig.THEMOVIEDB_IMAGE_BASEURL + "/" + movie.getMoviePoster()).into(movieTarget);
+        Picasso.with(context)
+                .load(BuildConfig.THEMOVIEDB_IMAGE_BASEURL + "/" + movie.getMoviePoster())
+                .placeholder(R.drawable.loading_image)
+                .error(R.drawable.connectionerror)
+                .into(movieTarget);
     }
 
     /**
