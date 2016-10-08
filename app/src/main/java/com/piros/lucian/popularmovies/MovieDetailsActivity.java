@@ -7,9 +7,14 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import junit.framework.Assert;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.StringTokenizer;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Movie details activity
@@ -19,6 +24,17 @@ import java.util.StringTokenizer;
  */
 public class MovieDetailsActivity extends AppCompatActivity {
     private final String LOG_TAG = MovieDetailsActivity.class.getSimpleName();
+
+    @BindView(R.id.movietitle)
+    TextView movieTitle;
+    @BindView(R.id.movieposter)
+    ImageView moviePoster;
+    @BindView(R.id.releasedate)
+    TextView releaseDate;
+    @BindView(R.id.userrating)
+    RatingBar userRating;
+    @BindView(R.id.moviesynopsis)
+    TextView movieSynopsis;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,19 +46,23 @@ public class MovieDetailsActivity extends AppCompatActivity {
         Movie movie = bundle.getParcelable(getResources()
                 .getString(R.string.activity_extra_param));
 
+        ButterKnife.bind(this);
+        Assert.assertNotNull(movieTitle);
+        Assert.assertNotNull(moviePoster);
+        Assert.assertNotNull(releaseDate);
+        Assert.assertNotNull(userRating);
+        Assert.assertNotNull(movieSynopsis);
+
         // Set Movie Title
-        TextView movieTitle = (TextView) findViewById(R.id.movietitle);
         movieTitle.setText(movie.getOriginalTitle());
 
         // Load the bitmap. Leave this empty if bitmap was not fetched already
-        ImageView moviePoster = (ImageView) findViewById(R.id.movieposter);
         Bitmap movieBitmap = movie.getMovieBitmap();
         if (movieBitmap != null) {
             moviePoster.setImageBitmap(movieBitmap);
         }
 
         // Set release date - format release date as [<month name> <year>]
-        TextView releaseDate = (TextView) findViewById(R.id.releasedate);
         StringTokenizer st = new StringTokenizer(movie.getReleaseDate(), "-");
         String year = st.nextToken();
         int month = Integer.parseInt(st.nextToken());
@@ -53,11 +73,9 @@ public class MovieDetailsActivity extends AppCompatActivity {
         releaseDate.setText(month_name + " " + year);
 
         // Set user rating - as we only use 5 stars half the value received from database
-        RatingBar userRating = (RatingBar) findViewById((R.id.userrating));
         userRating.setRating((float) movie.getUserRating() / 2.0f);
 
         // Set movie synopsis
-        TextView movieSynopsis = (TextView) findViewById(R.id.moviesynopsis);
         movieSynopsis.setText(movie.getPlotSynopsis());
     }
 }

@@ -9,7 +9,12 @@ import android.widget.ImageView;
 
 import com.piros.lucian.popularmovies.data.MovieDataProvider;
 
+import junit.framework.Assert;
+
 import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 /**
  * Custom array adapter. Provides a list of movies and display each of them as a single thumbnail
@@ -20,6 +25,9 @@ import java.util.List;
 public class MovieAdapter extends ArrayAdapter<Movie> {
 
     private static final String LOG_TAG = MovieAdapter.class.getSimpleName();
+
+    @BindView(R.id.movieposter)
+    ImageView moviePoster;
 
     /**
      * Own custom constructor (it doesn't mirror a superclass constructor).
@@ -50,8 +58,8 @@ public class MovieAdapter extends ArrayAdapter<Movie> {
             convertView = LayoutInflater.from(getContext()).inflate(
                     R.layout.movieposter_layout, parent, false);
         }
-
-        ImageView moviePoster = (ImageView) convertView.findViewById(R.id.movieposter);
+        ButterKnife.bind(this, convertView);
+        Assert.assertNotNull(moviePoster);
 
         // Fetch movie poster
         MovieDataProvider.getInstance(getContext()).fetchMoviePoster(movie, moviePoster);

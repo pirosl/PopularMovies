@@ -14,8 +14,14 @@ import android.widget.GridView;
 import com.piros.lucian.popularmovies.data.MovieDBRequest;
 import com.piros.lucian.popularmovies.data.MovieDataProvider;
 
+import junit.framework.Assert;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnItemClick;
 
 /**
  * A {@link Fragment} that presents a grid view of movie posters.
@@ -27,7 +33,8 @@ public class MoviePostersFragment extends Fragment {
 
     private static final String LOG_TAG = MoviePostersFragment.class.getSimpleName();
 
-    private GridView gridviewMoviePosters;
+    @BindView(R.id.gridview_movieposters)
+    GridView gridviewMoviePosters;
     private MovieAdapter movieAdapter;
 
     public MoviePostersFragment() {
@@ -44,7 +51,8 @@ public class MoviePostersFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_movieposters, container, false);
 
-        gridviewMoviePosters = (GridView) rootView.findViewById(R.id.gridview_movieposters);
+        ButterKnife.bind(this, rootView);
+        Assert.assertNotNull(gridviewMoviePosters);
 
         List<Movie> movies = new ArrayList<Movie>();
 
@@ -52,21 +60,18 @@ public class MoviePostersFragment extends Fragment {
         movieAdapter = new MovieAdapter(getActivity(), movies);
         gridviewMoviePosters.setAdapter(movieAdapter);
 
-        // Set onItemClick listener. When item is clicked the MovieDetail page will be displayed
-        gridviewMoviePosters.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                Movie movie = movieAdapter.getItem(position);
-                Intent intent = new Intent(getActivity().getApplicationContext(), MovieDetailsActivity.class);
-                intent.putExtra(getResources().getString(R.string.activity_extra_param), movie);
-                startActivity(intent);
-            }
-        });
-
         MovieDataProvider movieDataProvider = MovieDataProvider.getInstance(getContext());
         movieDataProvider.hookMovieAdapter(movieAdapter);
 
         return rootView;
+    }
+
+    @OnItemClick(R.id.gridview_movieposters)
+    public void onItemClick(AdapterView<?> adapterView, int position) {
+        Movie movie = movieAdapter.getItem(position);
+        Intent intent = new Intent(getActivity().getApplicationContext(), MovieDetailsActivity.class);
+        intent.putExtra(getResources().getString(R.string.activity_extra_param), movie);
+        startActivity(intent);
     }
 
     @Override
