@@ -1,7 +1,6 @@
 package com.piros.lucian.popularmovies;
 
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -37,6 +36,18 @@ public class MoviePostersFragment extends Fragment {
     GridView gridviewMoviePosters;
     private MovieAdapter movieAdapter;
 
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows activities to be notified of item
+     * selections.
+     */
+    public interface Callback {
+        /**
+         * DetailFragmentCallback for when an item has been selected.
+         */
+        public void onItemSelected(Movie movie);
+    }
+
     public MoviePostersFragment() {
     }
 
@@ -69,9 +80,8 @@ public class MoviePostersFragment extends Fragment {
     @OnItemClick(R.id.gridview_movieposters)
     public void onItemClick(AdapterView<?> adapterView, int position) {
         Movie movie = movieAdapter.getItem(position);
-        Intent intent = new Intent(getActivity().getApplicationContext(), MovieDetailsActivity.class);
-        intent.putExtra(getResources().getString(R.string.activity_extra_param), movie);
-        startActivity(intent);
+        ((Callback) getActivity())
+                .onItemSelected(movie);
     }
 
     @Override

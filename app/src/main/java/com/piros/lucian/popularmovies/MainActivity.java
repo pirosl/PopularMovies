@@ -12,13 +12,30 @@ import android.view.MenuItem;
  * @author Lucian Piros
  * @version 1.0
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MoviePostersFragment.Callback {
     private final String LOG_TAG = MainActivity.class.getSimpleName();
+    private static final String DETAILFRAGMENT_TAG = "DFTAG";
+
+    private boolean mMasterDetailFlow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (findViewById(R.id.fragment_moviedetails) != null) {
+            // The detail container view will be present only in the large-screen layouts
+            // (res/layout-sw600dp). If this view is present, then the activity should be
+            // in master details mode.
+            mMasterDetailFlow = true;
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_moviedetails, new MovieDetailsFragment(), DETAILFRAGMENT_TAG)
+                        .commit();
+            }
+        } else {
+            mMasterDetailFlow = false;
+        }
     }
 
     @Override
@@ -40,4 +57,26 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onItemSelected(Movie movie) {
+        if (mMasterDetailFlow) {
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            Bundle arguments = new Bundle();
+            arguments.putParcelable(MovieDetailsFragment.DETAIL_MOVIE, movie);
+
+            MovieDetailsFragment fragment = new MovieDetailsFragment();
+            fragment.setArguments(arguments);
+
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_moviedetails, fragment)
+                    .commit();
+        }
+        else {
+            Intent intent = new Intent(this, MovieDetailsActivity.class);
+            intent.putExtra(getResources().getString(R.string.activity_extra_param), movie);
+            startActivity(intent);
+        }
+    }
 }

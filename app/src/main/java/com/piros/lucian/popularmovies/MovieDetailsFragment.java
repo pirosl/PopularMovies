@@ -61,30 +61,32 @@ public class MovieDetailsFragment extends Fragment {
         Assert.assertNotNull(userRating);
         Assert.assertNotNull(movieSynopsis);
 
-        // Set Movie Title
-        movieTitle.setText(movie.getOriginalTitle());
+        if(movie != null) {
+            // Set Movie Title
+            movieTitle.setText(movie.getOriginalTitle());
 
-        // Load the bitmap. Leave this empty if bitmap was not fetched already
-        Bitmap movieBitmap = movie.getMovieBitmap();
-        if (movieBitmap != null) {
-            moviePoster.setImageBitmap(movieBitmap);
+            // Load the bitmap. Leave this empty if bitmap was not fetched already
+            Bitmap movieBitmap = movie.getMovieBitmap();
+            if (movieBitmap != null) {
+                moviePoster.setImageBitmap(movieBitmap);
+            }
+
+            // Set release date - format release date as [<month name> <year>]
+            StringTokenizer st = new StringTokenizer(movie.getReleaseDate(), "-");
+            String year = st.nextToken();
+            int month = Integer.parseInt(st.nextToken());
+            Calendar calendar = Calendar.getInstance();
+            SimpleDateFormat month_date = new SimpleDateFormat("MMMM");
+            calendar.set(Calendar.MONTH, month);
+            String month_name = month_date.format(calendar.getTime());
+            releaseDate.setText(month_name + " " + year);
+
+            // Set user rating - as we only use 5 stars half the value received from database
+            userRating.setRating((float) movie.getUserRating() / 2.0f);
+
+            // Set movie synopsis
+            movieSynopsis.setText(movie.getPlotSynopsis());
         }
-
-        // Set release date - format release date as [<month name> <year>]
-        StringTokenizer st = new StringTokenizer(movie.getReleaseDate(), "-");
-        String year = st.nextToken();
-        int month = Integer.parseInt(st.nextToken());
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat month_date = new SimpleDateFormat("MMMM");
-        calendar.set(Calendar.MONTH, month);
-        String month_name = month_date.format(calendar.getTime());
-        releaseDate.setText(month_name + " " + year);
-
-        // Set user rating - as we only use 5 stars half the value received from database
-        userRating.setRating((float) movie.getUserRating() / 2.0f);
-
-        // Set movie synopsis
-        movieSynopsis.setText(movie.getPlotSynopsis());
 
         return detailsView;
     }
