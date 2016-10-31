@@ -33,7 +33,8 @@ public class MovieDBHelper extends SQLiteOpenHelper {
                 MovieEntry.COLUMN_IMAGE_THUMBNAIL_PATH + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_SYNOPSIS + " TEXT NOT NULL, " +
                 MovieEntry.COLUMN_USER_RATING + " REAL NOT NULL, " +
-                MovieEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL" +
+                MovieEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL, " +
+                MovieEntry.COLUMN_FAVOURITE + " INTEGER NOT NULL" +
                 " );";
 
         final String SQL_CREATE_SORT_TABLE = "CREATE TABLE " + SortEntry.TABLE_NAME + " (" +
