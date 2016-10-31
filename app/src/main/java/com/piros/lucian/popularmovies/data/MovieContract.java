@@ -18,6 +18,7 @@ public class MovieContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     public static final String PATH_MOVIE = "movie";
+    public static final String PATH_SORT = "sort";
     public static final String PATH_TRAILER = "trailer";
     public static final String PATH_REVIEW = "review";
 
@@ -48,6 +49,32 @@ public class MovieContract {
         public static final String COLUMN_FAVOURITE = "favourite";
 
         public static Uri buildMovieUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+    }
+
+    /* Inner class that defines the table contents of the sort table
+     * sort table keep the ordering position and category for each movie */
+    public static final class SortEntry implements BaseColumns {
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_SORT).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_SORT;
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_SORT;
+
+        // Table name
+        public static final String TABLE_NAME = "sort";
+        // Column with the foreign key into the movie table.
+        public static final String COLUMN_MOVIE_KEY = "movie_id";
+        // Sort criteria
+        public static final String COLUMN_SORT_CRITERIA = "sort_criteria";
+        // Index within sorted list
+        public static final String COLUMN_INDEX = "index";
+
+        public static Uri buildSortUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }

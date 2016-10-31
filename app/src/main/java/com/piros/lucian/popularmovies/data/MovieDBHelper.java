@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.piros.lucian.popularmovies.data.MovieContract.MovieEntry;
+import com.piros.lucian.popularmovies.data.MovieContract.SortEntry;
 import com.piros.lucian.popularmovies.data.MovieContract.ReviewEntry;
 import com.piros.lucian.popularmovies.data.MovieContract.TrailerEntry;
 
@@ -34,6 +35,17 @@ public class MovieDBHelper extends SQLiteOpenHelper {
                 MovieEntry.COLUMN_USER_RATING + " REAL NOT NULL, " +
                 MovieEntry.COLUMN_RELEASE_DATE + " TEXT NOT NULL" +
                 " );";
+
+        final String SQL_CREATE_SORT_TABLE = "CREATE TABLE " + SortEntry.TABLE_NAME + " (" +
+                SortEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                SortEntry.COLUMN_MOVIE_KEY + " INTEGER NOT NULL, " +
+                SortEntry.COLUMN_SORT_CRITERIA + " INTEGER NOT NULL, " +
+                SortEntry.COLUMN_INDEX + " INTEGER NOT NULL, " +
+
+                // Set up the foreign key to movie table.
+                " FOREIGN KEY (" + SortEntry.COLUMN_MOVIE_KEY + ") REFERENCES " +
+                MovieEntry.TABLE_NAME + " (" + MovieEntry._ID +
+                ");";
 
         final String SQL_CREATE_TRAILER_TABLE = "CREATE TABLE " + TrailerEntry.TABLE_NAME + " (" +
                 TrailerEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -67,6 +79,7 @@ public class MovieDBHelper extends SQLiteOpenHelper {
         // We'll have to double check the logic here. As user saves some favourites movies, any db schema update
         // will erase them if we drop and re-create the tables
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + MovieEntry.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + SortEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + TrailerEntry.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + ReviewEntry.TABLE_NAME);
         onCreate(sqLiteDatabase);
