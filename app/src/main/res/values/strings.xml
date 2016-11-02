@@ -28,4 +28,7 @@
 
     <!-- Value used to pass movie as parameter from Main Activity to Movie Details Activity -->
     <string name="activity_extra_param" translatable="false">movie</string>
+
+    <!-- ContentProvider authority -->
+    <string name="content_authority">com.piros.lucian.popularmovies</string>
 </resources>

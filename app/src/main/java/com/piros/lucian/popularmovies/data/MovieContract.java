@@ -22,6 +22,10 @@ public class MovieContract {
     public static final String PATH_TRAILER = "trailer";
     public static final String PATH_REVIEW = "review";
 
+    public static final String FILTER_FAVOURITE = "favourite";
+    public static final String FILTER_TOP_RATED = "top_rated";
+    public static final String FILTER_POPULAR = "popular";
+
     /* Inner class that defines the table contents of the movie table */
     public static final class MovieEntry implements BaseColumns {
 
@@ -51,6 +55,22 @@ public class MovieContract {
         public static Uri buildMovieUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        public static Uri buildFilteredMoviesUri(String filter) {
+            return CONTENT_URI.buildUpon().appendPath(filter).build();
+        }
+
+        public static Uri buildMovieTrailersUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id).buildUpon().appendPath(PATH_TRAILER).build();
+        }
+
+        public static Uri buildMoviereviewsUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id).buildUpon().appendPath(PATH_REVIEW).build();
+        }
+
+        public static long getDateFromUri(Uri uri) {
+            return Long.parseLong(uri.getPathSegments().get(1));
+        }
     }
 
     /* Inner class that defines the table contents of the sort table
@@ -72,7 +92,7 @@ public class MovieContract {
         // Sort criteria
         public static final String COLUMN_SORT_CRITERIA = "sort_criteria";
         // Index within sorted list
-        public static final String COLUMN_INDEX = "index";
+        public static final String COLUMN_INDEX = "sort_index";
 
         public static Uri buildSortUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
@@ -124,7 +144,7 @@ public class MovieContract {
         // Review's url
         public static final String COLUMN_URL = "url";
 
-        public static Uri buildTrailerUri(long id) {
+        public static Uri buildReviewUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }

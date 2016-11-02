@@ -40,13 +40,13 @@ public class MovieDBHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_SORT_TABLE = "CREATE TABLE " + SortEntry.TABLE_NAME + " (" +
                 SortEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 SortEntry.COLUMN_MOVIE_KEY + " INTEGER NOT NULL, " +
-                SortEntry.COLUMN_SORT_CRITERIA + " INTEGER NOT NULL, " +
+                SortEntry.COLUMN_SORT_CRITERIA + " TEXT NOT NULL, " +
                 SortEntry.COLUMN_INDEX + " INTEGER NOT NULL, " +
 
                 // Set up the foreign key to movie table.
                 " FOREIGN KEY (" + SortEntry.COLUMN_MOVIE_KEY + ") REFERENCES " +
                 MovieEntry.TABLE_NAME + " (" + MovieEntry._ID +
-                ");";
+                "));";
 
         final String SQL_CREATE_TRAILER_TABLE = "CREATE TABLE " + TrailerEntry.TABLE_NAME + " (" +
                 TrailerEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -56,7 +56,7 @@ public class MovieDBHelper extends SQLiteOpenHelper {
                 // Set up the foreign key to movie table.
                 " FOREIGN KEY (" + TrailerEntry.COLUMN_MOVIE_KEY + ") REFERENCES " +
                 MovieEntry.TABLE_NAME + " (" + MovieEntry._ID +
-                ");";
+                "));";
 
         final String SQL_CREATE_REVIEW_TABLE = "CREATE TABLE " + ReviewEntry.TABLE_NAME + " (" +
                 ReviewEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -68,9 +68,10 @@ public class MovieDBHelper extends SQLiteOpenHelper {
                 // Set up the foreign key to movie table.
                 " FOREIGN KEY (" + ReviewEntry.COLUMN_MOVIE_KEY + ") REFERENCES " +
                 MovieEntry.TABLE_NAME + " (" + MovieEntry._ID +
-                ");";
+                "));";
 
         sqLiteDatabase.execSQL(SQL_CREATE_MOVIE_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_SORT_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_TRAILER_TABLE);
         sqLiteDatabase.execSQL(SQL_CREATE_REVIEW_TABLE);
     }
