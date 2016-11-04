@@ -43,6 +43,8 @@ public class MovieContract {
         public static final String COLUMN_TITLE = "title";
         // Movie image thumbnail path
         public static final String COLUMN_IMAGE_THUMBNAIL_PATH = "image_thumbnail_path";
+        // Movie image thumbnail
+        public static final String COLUMN_IMAGE_THUMBNAIL = "image";
         // Movie synopsis
         public static final String COLUMN_SYNOPSIS = "synopsis";
         // User rating
