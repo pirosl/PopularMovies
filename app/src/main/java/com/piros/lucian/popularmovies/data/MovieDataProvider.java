@@ -2,10 +2,14 @@ package com.piros.lucian.popularmovies.data;
 
 
 import android.app.AlertDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 
@@ -23,8 +27,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Vector;
+
+import static com.piros.lucian.popularmovies.data.MovieContract.MovieEntry.buildFilteredMoviesUri;
 
 /**
  * Data provider singleton used to fetch movie information from MovieDB database.
@@ -106,14 +114,71 @@ public class MovieDataProvider {
             @Override
             public void onResponse(String response) {
                 try {
-                    movieAdapter.clear();
+                    Vector<ContentValues> vContentValue = new Vector();
+
+                    // first delete movies from database
+                    int deleted = context.getContentResolver().delete(
+                        MovieContract.MovieEntry.buildFilteredMoviesUri(MovieContract.FILTER_POPULAR),
+                            null, // leaving "columns" null just returns all the columns.
+                            null  // cols for "where" clause
+                    );
+
                     JSONObject jsonResponse = new JSONObject(response);
                     JSONArray movies = jsonResponse.getJSONArray("results");
                     for (int loop = 0; loop < movies.length(); ++loop) {
                         JSONObject movie = movies.optJSONObject(loop);
-                        Movie m = new Movie(movie);
-                        movieAdapter.add(m);
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put(MovieContract.MovieEntry.COLUMN_TITLE, movie.getString("original_title"));
+                        contentValues.put(MovieContract.MovieEntry.COLUMN_SYNOPSIS, movie.getString("overview"));
+                        contentValues.put(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL_PATH, movie.getString("poster_path"));
+                        contentValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, movie.getString("release_date"));
+                        contentValues.put(MovieContract.MovieEntry.COLUMN_USER_RATING, movie.getString("vote_average"));
+                        contentValues.put(MovieContract.MovieEntry.COLUMN_FAVOURITE, 0);
+                        contentValues.put(MovieContract.SortEntry.COLUMN_SORT_CRITERIA, MovieContract.FILTER_POPULAR);
+                        // Movie m = new Movie(movie);
+                        //movieAdapter.add(m);
+                        vContentValue.add(contentValues);
                     }
+
+                    // insert into database
+                    ContentValues[] contentValuesArray = new ContentValues[vContentValue.size()];
+                    vContentValue.toArray(contentValuesArray);
+                    int noOfInsertedValues = context.getContentResolver().bulkInsert(buildFilteredMoviesUri(MovieContract.FILTER_POPULAR), contentValuesArray);
+
+                    Log.d(LOG_TAG, "Number of inserted values: " + noOfInsertedValues);
+
+                    // get movies back so we can download the thumbnails
+                    // A cursor is your primary interface to the query results.
+                    Cursor cursor = context.getContentResolver().query(
+                            MovieContract.MovieEntry.CONTENT_URI/*buildFilteredMoviesUri(MovieContract.FILTER_POPULAR)*/,
+                            null, // leaving "columns" null just returns all the columns.
+                            null, // cols for "where" clause
+                            null, // values for "where" clause
+                            null/*MovieContract.SortEntry.COLUMN_INDEX + " ASC" */ // sort order == by DATE ASCENDING
+                    );
+
+                    int cc = cursor.getCount();
+
+                    // and let's make sure they match the ones we created
+                    cursor.moveToFirst();
+                    int count = 1;
+                    while (!cursor.isLast()) {
+                        String movieTitle = (String)cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE));
+                        MovieTarget movieTarget = new MovieTarget(cursor.getLong(cursor.getColumnIndex(MovieContract.MovieEntry._ID)), movieTitle);
+                        if(!picassoMovieTargets.containsKey(movieTitle)) {
+                            picassoMovieTargets.put(movieTitle, movieTarget); // make sure we keep a refference to movie target as Picasso only works with weak refferences
+                        }
+                        // load bitmap into MovieTarget class
+                        Picasso.with(context)
+                                .load(BuildConfig.THEMOVIEDB_IMAGE_BASEURL + "/" + cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL_PATH)))
+                                .placeholder(R.drawable.loading_image)
+                                .error(R.drawable.connectionerror)
+                                .into(movieTarget);
+                        cursor.moveToNext();
+                        Log.d(LOG_TAG, "Ask image for line: " + "(" + count++ + ") " + cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
+                        Log.d(LOG_TAG, "Further info: " + BuildConfig.THEMOVIEDB_IMAGE_BASEURL + "/" + cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL_PATH)));
+                    }
+                    cursor.close();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -174,22 +239,54 @@ public class MovieDataProvider {
     private class MovieTarget implements Target {
         private Movie movie;
         private ImageView moviePosterImageView;
+        private long _id;
+        private String movieTitle;
 
         public MovieTarget(Movie movie, ImageView moviePosterImageView) {
             this.movie = movie;
             this.moviePosterImageView = moviePosterImageView;
         }
 
+        public MovieTarget(long _id, String movieTitle) {
+            this._id = _id;
+            this.movieTitle = movieTitle;
+        }
+
         @Override
         public void onBitmapLoaded(Bitmap bitmap, com.squareup.picasso.Picasso.LoadedFrom from) {
-            moviePosterImageView.setImageBitmap(bitmap);
-            movie.setMovieBitmap(bitmap);
+            // moviePosterImageView.setImageBitmap(bitmap);
+            //movie.setMovieBitmap(bitmap);
+
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            byte[] img = bos.toByteArray();
+
+            ContentValues updateValues = new ContentValues();
+            updateValues.put(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL, img);
+
+            context.getContentResolver().update(
+                    MovieContract.MovieEntry.CONTENT_URI, updateValues, MovieContract.MovieEntry._ID + "= ?",
+                    new String[]{Long.toString(_id)});
+
+            // no need to keep the refference any longer
+            picassoMovieTargets.remove(movieTitle);
         }
 
         @Override
         public void onBitmapFailed(Drawable errorDrawable) {
             // load a Bitmap showing there is a network error
-            moviePosterImageView.setImageResource(R.drawable.connectionerror);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            Bitmap bitmap  = BitmapFactory.decodeResource(context.getResources(),
+                    R.drawable.connectionerror);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+            byte[] img = bos.toByteArray();
+
+            ContentValues updateValues = new ContentValues();
+            updateValues.put(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL, img);
+
+            context.getContentResolver().update(
+                    MovieContract.MovieEntry.CONTENT_URI, updateValues, MovieContract.MovieEntry._ID + "= ?",
+                    new String[]{Long.toString(_id)});
         }
 
         @Override

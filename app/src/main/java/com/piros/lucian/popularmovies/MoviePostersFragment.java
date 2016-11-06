@@ -1,22 +1,25 @@
 package com.piros.lucian.popularmovies;
 
 
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 
+import com.piros.lucian.popularmovies.data.MovieContract;
 import com.piros.lucian.popularmovies.data.MovieDBRequest;
 import com.piros.lucian.popularmovies.data.MovieDataProvider;
 
 import junit.framework.Assert;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,13 +31,21 @@ import butterknife.OnItemClick;
  * @author Lucian Piros
  * @version 1.0
  */
-public class MoviePostersFragment extends Fragment {
+public class MoviePostersFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String LOG_TAG = MoviePostersFragment.class.getSimpleName();
 
+    private static final String[] MOVIE_COLUMNS = {
+            MovieContract.MovieEntry.TABLE_NAME + "." + MovieContract.MovieEntry._ID,
+            MovieContract.MovieEntry.TABLE_NAME + "." + MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL
+    };
+
+    static final int COL_MOVIE_ID = 0;
+    static final int COL_MOVIE_IMAGE_THUMBNAIL = 1;
+
     @BindView(R.id.gridview_movieposters)
     GridView gridviewMoviePosters;
-    private MovieAdapter movieAdapter;
+    private MovieAdapter mMovieAdapter;
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -65,23 +76,25 @@ public class MoviePostersFragment extends Fragment {
         ButterKnife.bind(this, rootView);
         Assert.assertNotNull(gridviewMoviePosters);
 
-        List<Movie> movies = new ArrayList<Movie>();
+  //      List<Movie> movies = new ArrayList<Movie>();
 
         // Instantiate the custom MovieAdapte
-        movieAdapter = new MovieAdapter(getActivity(), movies);
-        gridviewMoviePosters.setAdapter(movieAdapter);
-
+        mMovieAdapter = new MovieAdapter(getActivity(), null, 0);
+        gridviewMoviePosters.setAdapter(mMovieAdapter);
+//
+        // fetch some data for test
         MovieDataProvider movieDataProvider = MovieDataProvider.getInstance(getContext());
-        movieDataProvider.hookMovieAdapter(movieAdapter);
+  //      movieDataProvider.fetchMovies(MovieDBRequest.MOST_POPULAR);
+//        movieDataProvider.hookMovieAdapter(mMovieAdapter);
 
         return rootView;
     }
 
     @OnItemClick(R.id.gridview_movieposters)
     public void onItemClick(AdapterView<?> adapterView, int position) {
-        Movie movie = movieAdapter.getItem(position);
-        ((Callback) getActivity())
-                .onItemSelected(movie);
+//        Movie movie = mMovieAdapter.getItem(position);
+//        ((Callback) getActivity())
+//                .onItemSelected(movie);
     }
 
     @Override
@@ -103,5 +116,47 @@ public class MoviePostersFragment extends Fragment {
             movieDataProvider.fetchMovies(MovieDBRequest.MOST_POPULAR);
         if (sortType.equalsIgnoreCase(getResources().getString(R.string.pref_sort_toprated)))
             movieDataProvider.fetchMovies(MovieDBRequest.TOP_RATED);
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        getLoaderManager().initLoader(0, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        // This is called when a new Loader needs to be created.  This
+        // fragment only uses one loader, so we don't care about checking the id.
+
+        // To only show current and future dates, filter the query to return weather only for
+        // dates after or including today.
+
+        // Sort order:  Ascending, by date.
+        String sortOrder = MovieContract.SortEntry.COLUMN_INDEX + " ASC";
+
+        Uri filteredMoviesUri = MovieContract.MovieEntry.buildFilteredMoviesUri(MovieContract.FILTER_POPULAR);
+
+        return new CursorLoader(getActivity(),
+                filteredMoviesUri,
+                MOVIE_COLUMNS,
+                null,
+                null,
+                sortOrder);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mMovieAdapter.swapCursor(data);
+//        if (mPosition != ListView.INVALID_POSITION) {
+//            // If we don't need to restart the loader, and there's a desired position to restore
+//            // to, do so now.
+//            mListView.smoothScrollToPosition(mPosition);
+//        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mMovieAdapter.swapCursor(null);
     }
 }

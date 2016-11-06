@@ -70,6 +70,11 @@ public class MovieProvider extends ContentProvider {
             MovieContract.ReviewEntry.TABLE_NAME +
                     "." + MovieContract.ReviewEntry.COLUMN_MOVIE_KEY + " = ? ";
 
+    //sort.movie_id = ?
+    private static final String sSortForMovieSelection =
+            MovieContract.SortEntry.TABLE_NAME +
+                    "." + MovieContract.SortEntry.COLUMN_MOVIE_KEY + " = ? ";
+
     //sort.sort_criteria = ?
     private static final String sSortCriteriaMovieSelection =
             MovieContract.SortEntry.TABLE_NAME +
@@ -193,6 +198,7 @@ public class MovieProvider extends ContentProvider {
                         null,
                         MovieContract.SortEntry.COLUMN_INDEX + " ASC"  // sort order == by sorting index ASCENDING
                 );
+                int cc = retCursor.getCount();
                 break;
             }
             // "sort"
@@ -303,6 +309,48 @@ public class MovieProvider extends ContentProvider {
                 rowsDeleted = db.delete(
                         MovieContract.MovieEntry.TABLE_NAME, selection, selectionArgs);
                 break;
+            case TOP_RATED_MOVIES: {
+                Cursor cursor = sSortedMoviesListQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                        null,
+                        sSortCriteriaMovieSelection,
+                        new String[]{MovieContract.FILTER_TOP_RATED},
+                        null,
+                        null,
+                        null
+                );
+                cursor.moveToFirst();
+                rowsDeleted = 0;
+                while (!cursor.isLast()) {
+                    int _id = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry._ID));
+                    int movieDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, sMovieSelection, new String[]{new Integer(_id).toString()});
+                    int sortDeleted = db.delete(MovieContract.SortEntry.TABLE_NAME, sSortForMovieSelection, new String[]{new Integer(_id).toString()});
+
+                    rowsDeleted += (movieDeleted == 1 && sortDeleted == 1) ? 1 : 0;
+                    cursor.moveToNext();
+                }
+                break;
+            }
+            case POPULAR_MOVIES: {
+                Cursor cursor = sSortedMoviesListQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                        null,
+                        sSortCriteriaMovieSelection,
+                        new String[]{MovieContract.FILTER_POPULAR},
+                        null,
+                        null,
+                        null
+                );
+                cursor.moveToFirst();
+                rowsDeleted = 0;
+                while (!cursor.isLast()) {
+                    int _id = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry._ID));
+                    int movieDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, sMovieSelection, new String[]{new Integer(_id).toString()});
+                    int sortDeleted = db.delete(MovieContract.SortEntry.TABLE_NAME, sSortForMovieSelection, new String[]{new Integer(_id).toString()});
+
+                    rowsDeleted += (movieDeleted == 1 && sortDeleted == 1) ? 1 : 0;
+                    cursor.moveToNext();
+                }
+                break;
+            }
             case SORT:
                 rowsDeleted = db.delete(
                         MovieContract.SortEntry.TABLE_NAME, selection, selectionArgs);
