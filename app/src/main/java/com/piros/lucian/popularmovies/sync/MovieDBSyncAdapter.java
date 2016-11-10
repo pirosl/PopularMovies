@@ -26,6 +26,7 @@ import com.android.volley.toolbox.Volley;
 import com.piros.lucian.popularmovies.BuildConfig;
 import com.piros.lucian.popularmovies.R;
 import com.piros.lucian.popularmovies.data.MovieContract;
+import com.piros.lucian.popularmovies.sync.volley.VolleyMovieDBStringRequest;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
@@ -73,8 +74,8 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.d(LOG_TAG, "Starting sync");
 
-        fetchMovies(VolleyMovieDBStringRequest.MOST_POPULAR);
-        fetchMovies(VolleyMovieDBStringRequest.TOP_RATED);
+        fetchMovies(MovieContract.POPULAR);
+        fetchMovies(MovieContract.TOP_RATED);
     }
 
     /**
@@ -88,9 +89,6 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
      * @param sortType sort type (most popular / top rated)
      */
     public void fetchMovies(final int sortType) {
-        // first cancel any outstanding request
-        queue.cancelAll(VOLLEY_TAG);
-
         // Success response listener
         // on success return populate the ArrayAdapter with received data
         Response.Listener<String> responseListener = new Response.Listener<String>() {
@@ -101,7 +99,7 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
                     Vector<ContentValues> vContentValue = new Vector();
 
                     String filter = MovieContract.FILTER_POPULAR;
-                    if (sortType == VolleyMovieDBStringRequest.TOP_RATED)
+                    if (sortType == MovieContract.TOP_RATED)
                         filter = MovieContract.FILTER_TOP_RATED;
 
                     // first delete movies from database

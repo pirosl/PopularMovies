@@ -1,9 +1,10 @@
-package com.piros.lucian.popularmovies.sync;
+package com.piros.lucian.popularmovies.sync.volley;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.toolbox.StringRequest;
 import com.piros.lucian.popularmovies.BuildConfig;
+import com.piros.lucian.popularmovies.data.MovieContract;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,15 +18,8 @@ import java.util.Map;
 public class VolleyMovieDBStringRequest extends StringRequest {
     private final String LOG_TAG = VolleyMovieDBStringRequest.class.getSimpleName();
 
-    public final static int MOST_POPULAR = 1;
-    public final static int TOP_RATED = 2;
-
-    private int sortType;
-
     public VolleyMovieDBStringRequest(int sortType, Response.Listener<String> listener, Response.ErrorListener errorListener) {
-        super(Request.Method.POST, BuildConfig.THEMOVIEDB_BASEURL + (sortType == MOST_POPULAR ? "/popular" : "/top_rated"), listener, errorListener);
-
-        this.sortType = sortType;
+        super(Request.Method.POST, BuildConfig.THEMOVIEDB_BASEURL + "/" + (sortType == MovieContract.POPULAR ? MovieContract.FILTER_POPULAR : MovieContract.FILTER_TOP_RATED), listener, errorListener);
     }
 
     @Override

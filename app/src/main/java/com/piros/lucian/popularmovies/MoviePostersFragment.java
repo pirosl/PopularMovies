@@ -16,7 +16,6 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.piros.lucian.popularmovies.data.MovieContract;
-import com.piros.lucian.popularmovies.sync.VolleyMovieDBStringRequest;
 
 import junit.framework.Assert;
 
@@ -100,10 +99,10 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
                 .getDefaultSharedPreferences(getContext())
                 .getString(getResources().getString(R.string.pref_sort_key), getResources().getString(R.string.pref_sort_mostpopular));
         if (sortType.equalsIgnoreCase(getResources().getString(R.string.pref_sort_mostpopular))) {
-            getLoaderManager().restartLoader(VolleyMovieDBStringRequest.MOST_POPULAR, null, this);
+            getLoaderManager().restartLoader(MovieContract.POPULAR, null, this);
         }
         if (sortType.equalsIgnoreCase(getResources().getString(R.string.pref_sort_toprated))) {
-            getLoaderManager().restartLoader(VolleyMovieDBStringRequest.TOP_RATED, null, this);
+            getLoaderManager().restartLoader(MovieContract.TOP_RATED, null, this);
         }
 
         super.onResume();
@@ -127,9 +126,9 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
         String sortOrder = MovieContract.SortEntry.COLUMN_INDEX + " ASC";
 
         String filter = "";
-        if (id == VolleyMovieDBStringRequest.MOST_POPULAR)
+        if (id == MovieContract.POPULAR)
             filter = MovieContract.FILTER_POPULAR;
-        if (id == VolleyMovieDBStringRequest.TOP_RATED)
+        if (id == MovieContract.TOP_RATED)
             filter = MovieContract.FILTER_TOP_RATED;
 
         Uri filteredMoviesUri = MovieContract.MovieEntry.buildFilteredMoviesUri(filter);
