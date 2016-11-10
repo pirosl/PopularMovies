@@ -1,4 +1,4 @@
-package com.piros.lucian.popularmovies.data;
+package com.piros.lucian.popularmovies.sync;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -14,15 +14,15 @@ import java.util.Map;
  * @author Lucian Piros
  * @version 1.0
  */
-public class MovieDBRequest extends StringRequest {
-    private final String LOG_TAG = MovieDBRequest.class.getSimpleName();
+public class VolleyMovieDBStringRequest extends StringRequest {
+    private final String LOG_TAG = VolleyMovieDBStringRequest.class.getSimpleName();
 
     public final static int MOST_POPULAR = 1;
     public final static int TOP_RATED = 2;
 
     private int sortType;
 
-    public MovieDBRequest(int sortType, Response.Listener<String> listener, Response.ErrorListener errorListener) {
+    public VolleyMovieDBStringRequest(int sortType, Response.Listener<String> listener, Response.ErrorListener errorListener) {
         super(Request.Method.POST, BuildConfig.THEMOVIEDB_BASEURL + (sortType == MOST_POPULAR ? "/popular" : "/top_rated"), listener, errorListener);
 
         this.sortType = sortType;

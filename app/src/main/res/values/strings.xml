@@ -31,4 +31,7 @@
 
     <!-- ContentProvider authority -->
     <string name="content_authority">com.piros.lucian.popularmovies</string>
+
+    <!-- SyncAdapter related -->
+    <string name="sync_account_type">popularmovies.lucian.piros.com</string>
 </resources>

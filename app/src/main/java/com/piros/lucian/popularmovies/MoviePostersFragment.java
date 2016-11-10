@@ -16,8 +16,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 
 import com.piros.lucian.popularmovies.data.MovieContract;
-import com.piros.lucian.popularmovies.data.MovieDBRequest;
-import com.piros.lucian.popularmovies.data.MovieDataProvider;
+import com.piros.lucian.popularmovies.sync.VolleyMovieDBStringRequest;
 
 import junit.framework.Assert;
 
@@ -76,56 +75,41 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
         ButterKnife.bind(this, rootView);
         Assert.assertNotNull(gridviewMoviePosters);
 
-  //      List<Movie> movies = new ArrayList<Movie>();
-
         // Instantiate the custom MovieAdapte
         mMovieAdapter = new MovieAdapter(getActivity(), null, 0);
         gridviewMoviePosters.setAdapter(mMovieAdapter);
-//
-        // fetch some data for test
-        MovieDataProvider movieDataProvider = MovieDataProvider.getInstance(getContext());
-  //      movieDataProvider.fetchMovies(MovieDBRequest.MOST_POPULAR);
-//        movieDataProvider.hookMovieAdapter(mMovieAdapter);
 
         return rootView;
     }
 
     @OnItemClick(R.id.gridview_movieposters)
     public void onItemClick(AdapterView<?> adapterView, int position) {
-//        Movie movie = mMovieAdapter.getItem(position);
-//        ((Callback) getActivity())
-//                .onItemSelected(movie);
+
     }
 
     @Override
     public void onResume() {
-        fetchMovies();
+        String sortType = PreferenceManager
+                .getDefaultSharedPreferences(getContext())
+                .getString(getResources().getString(R.string.pref_sort_key), getResources().getString(R.string.pref_sort_mostpopular));
+        if (sortType.equalsIgnoreCase(getResources().getString(R.string.pref_sort_mostpopular))) {
+            getLoaderManager().restartLoader(VolleyMovieDBStringRequest.MOST_POPULAR, null, this);
+        }
+        if (sortType.equalsIgnoreCase(getResources().getString(R.string.pref_sort_toprated))) {
+            getLoaderManager().restartLoader(VolleyMovieDBStringRequest.TOP_RATED, null, this);
+        }
 
         super.onResume();
     }
 
-    /**
-     * Fetch movies from movie data provider
-     */
-    private void fetchMovies() {
-        MovieDataProvider movieDataProvider = MovieDataProvider.getInstance(getContext());
-        String sortType = PreferenceManager
-                .getDefaultSharedPreferences(getContext())
-                .getString(getResources().getString(R.string.pref_sort_key), getResources().getString(R.string.pref_sort_mostpopular));
-        if (sortType.equalsIgnoreCase(getResources().getString(R.string.pref_sort_mostpopular)))
-            movieDataProvider.fetchMovies(MovieDBRequest.MOST_POPULAR);
-        if (sortType.equalsIgnoreCase(getResources().getString(R.string.pref_sort_toprated)))
-            movieDataProvider.fetchMovies(MovieDBRequest.TOP_RATED);
-    }
-
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        getLoaderManager().initLoader(0, null, this);
+      //  getLoaderManager().initLoader(0, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+    public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
         // This is called when a new Loader needs to be created.  This
         // fragment only uses one loader, so we don't care about checking the id.
 
@@ -135,7 +119,13 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
         // Sort order:  Ascending, by date.
         String sortOrder = MovieContract.SortEntry.COLUMN_INDEX + " ASC";
 
-        Uri filteredMoviesUri = MovieContract.MovieEntry.buildFilteredMoviesUri(MovieContract.FILTER_POPULAR);
+        String filter = "";
+        if (id == VolleyMovieDBStringRequest.MOST_POPULAR)
+            filter = MovieContract.FILTER_POPULAR;
+        if (id == VolleyMovieDBStringRequest.TOP_RATED)
+            filter = MovieContract.FILTER_TOP_RATED;
+
+        Uri filteredMoviesUri = MovieContract.MovieEntry.buildFilteredMoviesUri(filter);
 
         return new CursorLoader(getActivity(),
                 filteredMoviesUri,

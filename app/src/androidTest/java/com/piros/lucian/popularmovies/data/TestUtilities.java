@@ -10,6 +10,7 @@ import android.test.AndroidTestCase;
 
 import com.piros.lucian.popularmovies.utils.PollingCheck;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,10 +34,19 @@ public class TestUtilities extends AndroidTestCase {
             String columnName = entry.getKey();
             int idx = valueCursor.getColumnIndex(columnName);
             assertFalse("Column '" + columnName + "' not found. " + error, idx == -1);
-            String expectedValue = entry.getValue().toString();
-            assertEquals("Value '" + entry.getValue().toString() +
-                    "' did not match the expected value '" +
-                    expectedValue + "'. " + error, expectedValue, valueCursor.getString(idx));
+
+            if(columnName == MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL) {
+                byte[] expectedValue = (byte[])entry.getValue();
+                assertTrue("Value '" + entry.getValue().toString() +
+                        "' did not match the expected value '" +
+                        expectedValue + "'. " + error, Arrays.equals(expectedValue,valueCursor.getBlob(idx)));
+            }
+            else {
+                String expectedValue = entry.getValue().toString();
+                assertEquals("Value '" + entry.getValue().toString() +
+                        "' did not match the expected value '" +
+                        expectedValue + "'. " + error, expectedValue, valueCursor.getString(idx));
+            }
         }
     }
 
@@ -50,6 +60,7 @@ public class TestUtilities extends AndroidTestCase {
         testValues.put(MovieContract.MovieEntry.COLUMN_SYNOPSIS, "Synopsis");
         testValues.put(MovieContract.MovieEntry.COLUMN_FAVOURITE, "1");
         testValues.put(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL_PATH, "/some_path");
+        testValues.put(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL, new byte[0]);
         testValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, "01/01/2010");
         testValues.put(MovieContract.MovieEntry.COLUMN_USER_RATING, "3.5");
 
@@ -104,59 +115,7 @@ public class TestUtilities extends AndroidTestCase {
 
         return testValues;
     }
-//    /*
-//        Students: Use this to create some default weather values for your database tests.
-//     */
-//    static ContentValues createWeatherValues(long locationRowId) {
-//        ContentValues weatherValues = new ContentValues();
-//        weatherValues.put(WeatherContract.WeatherEntry.COLUMN_LOC_KEY, locationRowId);
-//        weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DATE, TEST_DATE);
-//        weatherValues.put(WeatherContract.WeatherEntry.COLUMN_DEGREES, 1.1);
-//        weatherValues.put(WeatherContract.WeatherEntry.COLUMN_HUMIDITY, 1.2);
-//        weatherValues.put(WeatherContract.WeatherEntry.COLUMN_PRESSURE, 1.3);
-//        weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MAX_TEMP, 75);
-//        weatherValues.put(WeatherContract.WeatherEntry.COLUMN_MIN_TEMP, 65);
-//        weatherValues.put(WeatherContract.WeatherEntry.COLUMN_SHORT_DESC, "Asteroids");
-//        weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WIND_SPEED, 5.5);
-//        weatherValues.put(WeatherContract.WeatherEntry.COLUMN_WEATHER_ID, 321);
-//
-//        return weatherValues;
-//    }
-//
-//    /*
-//        Students: You can uncomment this helper function once you have finished creating the
-//        LocationEntry part of the WeatherContract.
-//     */
-//    static ContentValues createNorthPoleLocationValues() {
-//        // Create a new map of values, where column names are the keys
-//        ContentValues testValues = new ContentValues();
-//        testValues.put(WeatherContract.LocationEntry.COLUMN_LOCATION_SETTING, TEST_LOCATION);
-//        testValues.put(WeatherContract.LocationEntry.COLUMN_CITY_NAME, "North Pole");
-//        testValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LAT, 64.7488);
-//        testValues.put(WeatherContract.LocationEntry.COLUMN_COORD_LONG, -147.353);
-//
-//        return testValues;
-//    }
-//
-//    /*
-//        Students: You can uncomment this function once you have finished creating the
-//        LocationEntry part of the WeatherContract as well as the WeatherDbHelper.
-//     */
-//    static long insertNorthPoleLocationValues(Context context) {
-//        // insert our test records into the database
-//        WeatherDbHelper dbHelper = new WeatherDbHelper(context);
-//        SQLiteDatabase db = dbHelper.getWritableDatabase();
-//        ContentValues testValues = TestUtilities.createNorthPoleLocationValues();
-//
-//        long locationRowId;
-//        locationRowId = db.insert(WeatherContract.LocationEntry.TABLE_NAME, null, testValues);
-//
-//        // Verify we got a row back.
-//        assertTrue("Error: Failure to insert North Pole Location Values", locationRowId != -1);
-//
-//        return locationRowId;
-//    }
-//
+
     /*
         Function copied from Sunshine app on UDACITY
         The functions we provide inside of TestProvider use this utility class to test

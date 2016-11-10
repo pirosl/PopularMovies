@@ -8,6 +8,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
+import java.util.Vector;
+
 /**
  * Movie content provider. Manages access to persisted data within movies.db database
  *
@@ -111,7 +113,6 @@ public class MovieProvider extends ContentProvider {
         return true;
     }
 
-
     @Override
     public String getType(Uri uri) {
 
@@ -198,7 +199,6 @@ public class MovieProvider extends ContentProvider {
                         null,
                         MovieContract.SortEntry.COLUMN_INDEX + " ASC"  // sort order == by sorting index ASCENDING
                 );
-                int cc = retCursor.getCount();
                 break;
             }
             // "sort"
@@ -318,15 +318,22 @@ public class MovieProvider extends ContentProvider {
                         null,
                         null
                 );
-                cursor.moveToFirst();
+
+                Vector<Integer> ids = new Vector<>();
                 rowsDeleted = 0;
-                while (!cursor.isLast()) {
-                    int _id = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry._ID));
-                    int movieDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, sMovieSelection, new String[]{new Integer(_id).toString()});
-                    int sortDeleted = db.delete(MovieContract.SortEntry.TABLE_NAME, sSortForMovieSelection, new String[]{new Integer(_id).toString()});
+                if(cursor.moveToFirst()) {
+                    do {
+                        int _id = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry._ID));
+                        ids.add(_id);
+                    } while (cursor.moveToNext());
+                    cursor.close();
+                }
+
+                for(Integer id : ids) {
+                    int movieDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, sMovieSelection, new String[]{id.toString()});
+                    int sortDeleted = db.delete(MovieContract.SortEntry.TABLE_NAME, sSortForMovieSelection, new String[]{id.toString()});
 
                     rowsDeleted += (movieDeleted == 1 && sortDeleted == 1) ? 1 : 0;
-                    cursor.moveToNext();
                 }
                 break;
             }
@@ -339,15 +346,21 @@ public class MovieProvider extends ContentProvider {
                         null,
                         null
                 );
-                cursor.moveToFirst();
+                Vector<Integer> ids = new Vector<>();
                 rowsDeleted = 0;
-                while (!cursor.isLast()) {
-                    int _id = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry._ID));
-                    int movieDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, sMovieSelection, new String[]{new Integer(_id).toString()});
-                    int sortDeleted = db.delete(MovieContract.SortEntry.TABLE_NAME, sSortForMovieSelection, new String[]{new Integer(_id).toString()});
+                if(cursor.moveToFirst()) {
+                    do {
+                        int _id = cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry._ID));
+                        ids.add(_id);
+                    } while (cursor.moveToNext());
+                    cursor.close();
+                }
+
+                for(Integer id : ids) {
+                    int movieDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, sMovieSelection, new String[]{id.toString()});
+                    int sortDeleted = db.delete(MovieContract.SortEntry.TABLE_NAME, sSortForMovieSelection, new String[]{id.toString()});
 
                     rowsDeleted += (movieDeleted == 1 && sortDeleted == 1) ? 1 : 0;
-                    cursor.moveToNext();
                 }
                 break;
             }

@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.piros.lucian.popularmovies.sync.MovieDBSyncAdapter;
+
 /**
  * Main activity class
  *
@@ -36,6 +38,8 @@ public class MainActivity extends AppCompatActivity implements MoviePostersFragm
         } else {
             mMasterDetailFlow = false;
         }
+
+        MovieDBSyncAdapter.initializeSyncAdapter(this);
     }
 
     @Override
