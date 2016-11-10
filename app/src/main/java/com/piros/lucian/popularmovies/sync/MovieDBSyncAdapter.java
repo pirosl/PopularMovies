@@ -18,15 +18,12 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.Volley;
 import com.piros.lucian.popularmovies.BuildConfig;
-import com.piros.lucian.popularmovies.Movie;
 import com.piros.lucian.popularmovies.R;
 import com.piros.lucian.popularmovies.data.MovieContract;
 import com.squareup.picasso.Picasso;
@@ -58,9 +55,6 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
     public static final int SYNC_INTERVAL = 60 * 60;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
 
-    // target custom adapter
-    private ArrayAdapter<Movie> movieAdapter;
-
     // Picasso accepts only weak references make - so we save them to make sure application works correctly
     private Map<String, PicassoMovieTarget> picassoMovieTargets;
 
@@ -79,6 +73,7 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.d(LOG_TAG, "Starting sync");
 
+        fetchMovies(VolleyMovieDBStringRequest.MOST_POPULAR);
         fetchMovies(VolleyMovieDBStringRequest.TOP_RATED);
     }
 
@@ -128,8 +123,6 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
                         contentValues.put(MovieContract.MovieEntry.COLUMN_USER_RATING, movie.getString("vote_average"));
                         contentValues.put(MovieContract.MovieEntry.COLUMN_FAVOURITE, 0);
                         contentValues.put(MovieContract.SortEntry.COLUMN_SORT_CRITERIA, filter);
-                        // Movie m = new Movie(movie);
-                        //movieAdapter.add(m);
                         vContentValue.add(contentValues);
                     }
 
@@ -138,7 +131,7 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
                     vContentValue.toArray(contentValuesArray);
                     int noOfInsertedValues = getContext().getContentResolver().bulkInsert(buildFilteredMoviesUri(filter), contentValuesArray);
 
-                    Log.d(LOG_TAG, "Number of inserted values: " + noOfInsertedValues);
+                    Log.d(LOG_TAG, "Insert  " + noOfInsertedValues + " items in local database");
 
                     // get movies back so we can download the thumbnails
                     // A cursor is your primary interface to the query results.
@@ -315,15 +308,8 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
      * and ImageView
      */
     private class PicassoMovieTarget implements Target {
-        private Movie movie;
-        private ImageView moviePosterImageView;
         private long _id;
         private String movieTitle;
-
-        public PicassoMovieTarget(Movie movie, ImageView moviePosterImageView) {
-            this.movie = movie;
-            this.moviePosterImageView = moviePosterImageView;
-        }
 
         public PicassoMovieTarget(long _id, String movieTitle) {
             this._id = _id;

@@ -1,8 +1,9 @@
 package com.piros.lucian.popularmovies;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -62,13 +63,13 @@ public class MainActivity extends AppCompatActivity implements MoviePostersFragm
     }
 
     @Override
-    public void onItemSelected(Movie movie) {
+    public void onItemSelected(Uri movieUri) {
         if (mMasterDetailFlow) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putParcelable(MovieDetailsFragment.DETAIL_MOVIE, movie);
+            arguments.putParcelable(MovieDetailsFragment.DETAIL_MOVIE, movieUri);
 
             MovieDetailsFragment fragment = new MovieDetailsFragment();
             fragment.setArguments(arguments);
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements MoviePostersFragm
         }
         else {
             Intent intent = new Intent(this, MovieDetailsActivity.class);
-            intent.putExtra(getResources().getString(R.string.activity_extra_param), movie);
+            intent.putExtra(getResources().getString(R.string.activity_extra_param), movieUri);
             startActivity(intent);
         }
     }

@@ -26,11 +26,6 @@ public class MovieContract {
     public static final String FILTER_TOP_RATED = "top_rated";
     public static final String FILTER_POPULAR = "popular";
 
-    public static final int FILTER_INT_FAVOURITE = 0;
-    public static final int FILTER_INT_TOP_RATED = 1;
-    public static final int FILTER_INT_POPULAR = 2;
-
-
     /* Inner class that defines the table contents of the movie table */
     public static final class MovieEntry implements BaseColumns {
 

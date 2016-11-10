@@ -1,5 +1,6 @@
 package com.piros.lucian.popularmovies;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
@@ -23,11 +24,12 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
             // Retrieve movie passed as parameter from Main Activity
             Bundle bundle = getIntent().getExtras();
-            Movie movie = bundle.getParcelable(getResources()
+            Uri movieUri = bundle.getParcelable(getResources()
                     .getString(R.string.activity_extra_param));
 
             Bundle arguments = new Bundle();
-            arguments.putParcelable(MovieDetailsFragment.DETAIL_MOVIE, movie);
+            arguments.putParcelable(MovieDetailsFragment.DETAIL_MOVIE, movieUri);
+
 
             MovieDetailsFragment fragment = new MovieDetailsFragment();
             fragment.setArguments(arguments);

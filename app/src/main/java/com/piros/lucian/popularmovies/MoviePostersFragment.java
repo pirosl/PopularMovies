@@ -55,7 +55,7 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
         /**
          * DetailFragmentCallback for when an item has been selected.
          */
-        public void onItemSelected(Movie movie);
+        public void onItemSelected(Uri movieUri);
     }
 
     public MoviePostersFragment() {
@@ -84,6 +84,13 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
 
     @OnItemClick(R.id.gridview_movieposters)
     public void onItemClick(AdapterView<?> adapterView, int position) {
+        Cursor cursor = (Cursor) adapterView.getItemAtPosition(position);
+        if (cursor != null) {
+            ((Callback) getActivity())
+                    .onItemSelected(MovieContract.MovieEntry.buildMovieUri(
+                            cursor.getLong(cursor.getColumnIndex(MovieContract.MovieEntry._ID))
+                    ));
+        }
 
     }
 
