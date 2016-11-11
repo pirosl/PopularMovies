@@ -44,6 +44,8 @@ public class MovieContract {
         public static final String TABLE_NAME = "movie";
         // Movie title
         public static final String COLUMN_TITLE = "title";
+        // Movie id within MovieDB
+        public static final String COLUMN_MOVIE_ID = "moviedb_id";
         // Movie image thumbnail path
         public static final String COLUMN_IMAGE_THUMBNAIL_PATH = "image_thumbnail_path";
         // Movie image thumbnail

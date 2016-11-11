@@ -455,6 +455,7 @@ public class MovieProvider extends ContentProvider {
                         movieValue.put(MovieContract.MovieEntry.COLUMN_FAVOURITE, value.getAsInteger(MovieContract.MovieEntry.COLUMN_FAVOURITE));
                         movieValue.put(MovieContract.MovieEntry.COLUMN_USER_RATING, value.getAsDouble(MovieContract.MovieEntry.COLUMN_USER_RATING));
                         movieValue.put(MovieContract.MovieEntry.COLUMN_TITLE, value.getAsString(MovieContract.MovieEntry.COLUMN_TITLE));
+                        movieValue.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, value.getAsInteger(MovieContract.MovieEntry.COLUMN_MOVIE_ID));
                         movieValue.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, value.getAsString(MovieContract.MovieEntry.COLUMN_RELEASE_DATE));
                         movieValue.put(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL_PATH, value.getAsString(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL_PATH));
                         movieValue.put(MovieContract.MovieEntry.COLUMN_SYNOPSIS, value.getAsString(MovieContract.MovieEntry.COLUMN_SYNOPSIS));

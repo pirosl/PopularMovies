@@ -57,6 +57,7 @@ public class TestUtilities extends AndroidTestCase {
         // Create a new map of values, where column names are the keys
         ContentValues testValues = new ContentValues();
         testValues.put(MovieContract.MovieEntry.COLUMN_TITLE, "Title");
+        testValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, 1);
         testValues.put(MovieContract.MovieEntry.COLUMN_SYNOPSIS, "Synopsis");
         testValues.put(MovieContract.MovieEntry.COLUMN_FAVOURITE, "1");
         testValues.put(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL_PATH, "/some_path");

@@ -494,6 +494,7 @@ public class TestMovieProvider extends AndroidTestCase {
         for (int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++) {
             ContentValues topRatedMovieValues = new ContentValues();
             topRatedMovieValues.put(MovieEntry.COLUMN_TITLE, "title");
+            topRatedMovieValues.put(MovieEntry.COLUMN_MOVIE_ID, i);
             topRatedMovieValues.put(MovieEntry.COLUMN_SYNOPSIS, "synopsis");
             topRatedMovieValues.put(MovieEntry.COLUMN_IMAGE_THUMBNAIL_PATH, "thumbnail_path");
             topRatedMovieValues.put(MovieEntry.COLUMN_USER_RATING, 3.5);
@@ -550,6 +551,7 @@ public class TestMovieProvider extends AndroidTestCase {
         for (int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++) {
             ContentValues popularMovieValues = new ContentValues();
             popularMovieValues.put(MovieEntry.COLUMN_TITLE, "title");
+            popularMovieValues.put(MovieEntry.COLUMN_MOVIE_ID, i);
             popularMovieValues.put(MovieEntry.COLUMN_SYNOPSIS, "synopsis");
             popularMovieValues.put(MovieEntry.COLUMN_IMAGE_THUMBNAIL_PATH, "thumbnail_path");
             popularMovieValues.put(MovieEntry.COLUMN_USER_RATING, 3.5);
