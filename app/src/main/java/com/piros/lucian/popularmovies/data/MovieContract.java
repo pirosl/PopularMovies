@@ -73,7 +73,7 @@ public class MovieContract {
             return ContentUris.withAppendedId(CONTENT_URI, id).buildUpon().appendPath(PATH_REVIEW).build();
         }
 
-        public static long getDateFromUri(Uri uri) {
+        public static long getIDFromUri(Uri uri) {
             return Long.parseLong(uri.getPathSegments().get(1));
         }
     }
@@ -121,6 +121,8 @@ public class MovieContract {
         public static final String COLUMN_MOVIE_KEY = "movie_id";
         // Youtube key for this specific trailer
         public static final String COLUMN_YOUTUBE_KEY = "youtube_key";
+        // Trailer description
+        public static final String COLUMN_TRAILER_DESCRIPTION = "trailer_description";
 
         public static Uri buildTrailerUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);

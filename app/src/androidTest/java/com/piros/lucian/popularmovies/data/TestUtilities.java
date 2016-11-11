@@ -88,6 +88,7 @@ public class TestUtilities extends AndroidTestCase {
         ContentValues testValues = new ContentValues();
         testValues.put(MovieContract.TrailerEntry.COLUMN_MOVIE_KEY, movie_id);
         testValues.put(MovieContract.TrailerEntry.COLUMN_YOUTUBE_KEY, "youtube_key");
+        testValues.put(MovieContract.TrailerEntry.COLUMN_TRAILER_DESCRIPTION, "trailer");
 
         return testValues;
     }

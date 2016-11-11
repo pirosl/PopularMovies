@@ -606,6 +606,7 @@ public class TestMovieProvider extends AndroidTestCase {
         for (int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++) {
             ContentValues movieTrailerValues = new ContentValues();
             movieTrailerValues.put(TrailerEntry.COLUMN_YOUTUBE_KEY, "youtube_key");
+            movieTrailerValues.put(TrailerEntry.COLUMN_TRAILER_DESCRIPTION, "trailer");
             returnContentValues[i] = movieTrailerValues;
         }
         return returnContentValues;

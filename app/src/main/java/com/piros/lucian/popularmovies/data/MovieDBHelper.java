@@ -53,6 +53,7 @@ public class MovieDBHelper extends SQLiteOpenHelper {
                 TrailerEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
                 TrailerEntry.COLUMN_MOVIE_KEY + " INTEGER NOT NULL, " +
                 TrailerEntry.COLUMN_YOUTUBE_KEY + " TEXT NOT NULL, " +
+                TrailerEntry.COLUMN_TRAILER_DESCRIPTION + " TEXT NOT NULL, " +
 
                 // Set up the foreign key to movie table.
                 " FOREIGN KEY (" + TrailerEntry.COLUMN_MOVIE_KEY + ") REFERENCES " +

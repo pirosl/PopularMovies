@@ -170,7 +170,7 @@ public class MovieProvider extends ContentProvider {
                         MovieContract.MovieEntry.TABLE_NAME,
                         projection,
                         sMovieSelection,
-                        new String[]{Long.toString(MovieContract.MovieEntry.getDateFromUri(uri))},
+                        new String[]{Long.toString(MovieContract.MovieEntry.getIDFromUri(uri))},
                         null,
                         null,
                         sortOrder
