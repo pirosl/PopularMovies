@@ -2,7 +2,10 @@
     <string name="app_name">Popular Movies</string>
 
     <string name="label_activity_settings">Settings</string>
-    <string name="label_activity_details">Settings</string>
+    <string name="label_activity_details">Movie Details</string>
+    <string name="label_activity_trailer">Movie Trailer</string>
+
+    <string name="label_activity_movie_trailer">Trailers:</string>
 
     <!-- Label for menu entries -->
     <string name="action_settings">Settings</string>

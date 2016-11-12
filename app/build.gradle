@@ -22,6 +22,9 @@ android {
         it.buildConfigField "String", "THEMOVIEDB_IMAGE_BASEURL", THEMOVIEDB_IMAGE_BASEURL
         it.buildConfigField 'String', 'THEMOVIEDB_BASEURL', THEMOVIEDB_BASEURL
         it.buildConfigField 'String', 'THEMOVIEDB_APIKEY', THEMOVIEDB_APIKEY
+        it.buildConfigField 'String', 'THEMOVIEDB_TRAILERS', THEMOVIEDB_TRAILERS
+        it.buildConfigField 'String', 'THEMOVIEDB_REVIEWS', THEMOVIEDB_REVIEWS
+        it.buildConfigField 'String', 'YOUTUBE_LINK', YOUTUBE_LINK
     }
 }
 

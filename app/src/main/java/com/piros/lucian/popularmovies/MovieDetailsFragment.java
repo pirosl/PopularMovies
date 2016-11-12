@@ -1,5 +1,6 @@
 package com.piros.lucian.popularmovies;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -11,6 +12,8 @@ import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
@@ -36,6 +39,9 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
 
     private final String LOG_TAG = MovieDetailsFragment.class.getSimpleName();
 
+    private static final int MOVIE_DETAILS_LOADER_ID = 0;
+    private static final int MOVIE_TRAILERS_LOADER_ID = 1;
+
     static final String DETAIL_MOVIE = "MOVIE";
 
     @BindView(R.id.movietitle)
@@ -48,6 +54,9 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
     RatingBar userRating;
     @BindView(R.id.moviesynopsis)
     TextView movieSynopsis;
+    @BindView(R.id.gridview_movietrailers)
+    GridView movieTrailersGridView;
+    private MovieTrailerAdapter mMovieTrailerAdapter;
 
     private Uri mMovieUri;
     private static final String[] MOVIE_COLUMNS = {
@@ -60,13 +69,23 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
             MovieContract.MovieEntry.TABLE_NAME + "." + MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL
     };
 
-    static final int COL_MOVIE_ID = 0;
-    static final int COL_TITLE = 1;
-    static final int COL_SYNOPSIS = 2;
-    static final int COL_RELEASE_DATE = 3;
-    static final int COL_USER_RATING = 4;
-    static final int COL_FAVOURITE = 5;
-    static final int COL_IMAGE_THUMBNAIL = 6;
+    private static final String[] TRAILER_COLUMNS = {
+            MovieContract.TrailerEntry.TABLE_NAME + "." + MovieContract.TrailerEntry._ID,
+            MovieContract.TrailerEntry.TABLE_NAME + "." + MovieContract.TrailerEntry.COLUMN_TRAILER_DESCRIPTION,
+            MovieContract.TrailerEntry.TABLE_NAME + "." + MovieContract.TrailerEntry.COLUMN_YOUTUBE_KEY
+    };
+
+    static final int COL_MOVIE_MOVIE_ID = 0;
+    static final int COL_MOVIE_TITLE = 1;
+    static final int COL_MOVIE_SYNOPSIS = 2;
+    static final int COL_MOVIE_RELEASE_DATE = 3;
+    static final int COL_MOVIE_USER_RATING = 4;
+    static final int COL_MOVIE_FAVOURITE = 5;
+    static final int COL_MOVIE_IMAGE_THUMBNAIL = 6;
+
+    static final int COL_TRAILER_TRAILER_ID = 0;
+    static final int COL_TRAILER_DESCRIPTION = 1;
+    static final int COL_TRAILER_YOUTUBE_KEY = 2;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -85,65 +104,105 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
         Assert.assertNotNull(releaseDate);
         Assert.assertNotNull(userRating);
         Assert.assertNotNull(movieSynopsis);
+        Assert.assertNotNull(movieTrailersGridView);
 
         return detailsView;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        getLoaderManager().initLoader(0, null, this);
+        getLoaderManager().initLoader(MOVIE_DETAILS_LOADER_ID, null, this);
         super.onActivityCreated(savedInstanceState);
     }
 
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        if (null != mMovieUri) {
-            // Now create and return a CursorLoader that will take care of
-            // creating a Cursor for the data being displayed.
-            return new CursorLoader(
-                    getActivity(),
-                    mMovieUri,
-                    MOVIE_COLUMNS,
-                    null,
-                    null,
-                    null
-            );
+        Loader<Cursor> cursor = null;
+
+        switch (id) {
+            case MOVIE_DETAILS_LOADER_ID:
+                if (null != mMovieUri) {
+                    cursor = new CursorLoader(
+                            getActivity(),
+                            mMovieUri,
+                            MOVIE_COLUMNS,
+                            null,
+                            null,
+                            null
+                    );
+                }
+                break;
+            case MOVIE_TRAILERS_LOADER_ID:
+                long _movieId = MovieContract.MovieEntry.getIDFromUri(mMovieUri);
+                cursor = new CursorLoader(
+                        getActivity(),
+                        MovieContract.TrailerEntry.CONTENT_URI,
+                        TRAILER_COLUMNS,
+                        MovieContract.sTrailersForMovieSelection,
+                        new String[]{new Long(_movieId).toString()},
+                        null
+                );
+                break;
         }
-        return null;
+
+        return cursor;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        if (data != null && data.moveToFirst()) {
+        int loaderId = loader.getId();
+        if (MOVIE_DETAILS_LOADER_ID == loaderId) {
+            if (data != null && data.moveToFirst()) {
 
-            // Set Movie Title
-            movieTitle.setText(data.getString(COL_TITLE));
+                // Set Movie Title
+                movieTitle.setText(data.getString(COL_MOVIE_TITLE));
 
-            // Load the bitmap. Leave this empty if bitmap was not fetched already
-            byte[] imageThumbnail = data.getBlob(COL_IMAGE_THUMBNAIL);
+                // Load the bitmap. Leave this empty if bitmap was not fetched already
+                byte[] imageThumbnail = data.getBlob(COL_MOVIE_IMAGE_THUMBNAIL);
 
-            if (imageThumbnail == null) {
-                moviePoster.setImageResource(R.drawable.loading_image);
-            } else {
-                moviePoster.setImageBitmap(BitmapFactory.decodeByteArray(imageThumbnail, 0, imageThumbnail.length));
+                if (imageThumbnail == null) {
+                    moviePoster.setImageResource(R.drawable.loading_image);
+                } else {
+                    moviePoster.setImageBitmap(BitmapFactory.decodeByteArray(imageThumbnail, 0, imageThumbnail.length));
+                }
+
+                // Set release date - format release date as [<month name> <year>]
+                StringTokenizer st = new StringTokenizer(data.getString(COL_MOVIE_RELEASE_DATE), "-");
+                String year = st.nextToken();
+                int month = Integer.parseInt(st.nextToken());
+                Calendar calendar = Calendar.getInstance();
+                SimpleDateFormat month_date = new SimpleDateFormat("MMMM");
+                calendar.set(Calendar.MONTH, month);
+                String month_name = month_date.format(calendar.getTime());
+                releaseDate.setText(month_name + " " + year);
+
+                // Set user rating - as we only use 5 stars half the value received from database
+                userRating.setRating((float) data.getFloat(COL_MOVIE_USER_RATING) / 2.0f);
+
+                // Set movie synopsis
+                movieSynopsis.setText(data.getString(COL_MOVIE_SYNOPSIS));
+
+                // Instantiate the custom MovieAdapte
+                mMovieTrailerAdapter = new MovieTrailerAdapter(getActivity(), null, 0);
+                movieTrailersGridView.setAdapter(mMovieTrailerAdapter);
+
+                getLoaderManager().initLoader(MOVIE_TRAILERS_LOADER_ID, null, this);
             }
+        }
+        if (MOVIE_TRAILERS_LOADER_ID == loaderId) {
+            mMovieTrailerAdapter.swapCursor(data);
 
-            // Set release date - format release date as [<month name> <year>]
-            StringTokenizer st = new StringTokenizer(data.getString(COL_RELEASE_DATE), "-");
-            String year = st.nextToken();
-            int month = Integer.parseInt(st.nextToken());
-            Calendar calendar = Calendar.getInstance();
-            SimpleDateFormat month_date = new SimpleDateFormat("MMMM");
-            calendar.set(Calendar.MONTH, month);
-            String month_name = month_date.format(calendar.getTime());
-            releaseDate.setText(month_name + " " + year);
-
-            // Set user rating - as we only use 5 stars half the value received from database
-            userRating.setRating((float) data.getFloat(COL_USER_RATING) / 2.0f);
-
-            // Set movie synopsis
-            movieSynopsis.setText(data.getString(COL_SYNOPSIS));
+            movieTrailersGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                                             @Override
+                                                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                                                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                                                                 if (cursor != null) {
+                                                                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.YOUTUBE_LINK + cursor.getString(cursor.getColumnIndex(MovieContract.TrailerEntry.COLUMN_YOUTUBE_KEY)))));
+                                                                 }
+                                                             }
+                                                         }
+            );
 
         }
     }

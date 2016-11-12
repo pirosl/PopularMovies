@@ -10,6 +10,10 @@ import android.net.Uri;
 
 import java.util.Vector;
 
+import static com.piros.lucian.popularmovies.data.MovieContract.sMovieSelection;
+import static com.piros.lucian.popularmovies.data.MovieContract.sSortCriteriaMovieSelection;
+import static com.piros.lucian.popularmovies.data.MovieContract.sSortForMovieSelection;
+
 /**
  * Movie content provider. Manages access to persisted data within movies.db database
  *
@@ -51,36 +55,6 @@ public class MovieProvider extends ContentProvider {
                         " = " + MovieContract.MovieEntry.TABLE_NAME +
                         "." + MovieContract.MovieEntry._ID);
     }
-
-    //movie._id = ?
-    private static final String sMovieSelection =
-            MovieContract.MovieEntry.TABLE_NAME +
-                    "." + MovieContract.MovieEntry._ID + " = ? ";
-
-    //movie.favourite = ?
-    private static final String sFavouriteMoviesSelection =
-            MovieContract.MovieEntry.TABLE_NAME +
-                    "." + MovieContract.MovieEntry.COLUMN_FAVOURITE + " = ? ";
-
-    //trailer.movie_id = ?
-    private static final String sTrailersForMovieSelection =
-            MovieContract.TrailerEntry.TABLE_NAME +
-                    "." + MovieContract.TrailerEntry.COLUMN_MOVIE_KEY + " = ? ";
-
-    //review.movie_id = ?
-    private static final String sReviewsForMovieSelection =
-            MovieContract.ReviewEntry.TABLE_NAME +
-                    "." + MovieContract.ReviewEntry.COLUMN_MOVIE_KEY + " = ? ";
-
-    //sort.movie_id = ?
-    private static final String sSortForMovieSelection =
-            MovieContract.SortEntry.TABLE_NAME +
-                    "." + MovieContract.SortEntry.COLUMN_MOVIE_KEY + " = ? ";
-
-    //sort.sort_criteria = ?
-    private static final String sSortCriteriaMovieSelection =
-            MovieContract.SortEntry.TABLE_NAME +
-                    "." + MovieContract.SortEntry.COLUMN_SORT_CRITERIA + " = ? ";
 
     /*
         URI matcher for this content providers.
@@ -169,7 +143,7 @@ public class MovieProvider extends ContentProvider {
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         MovieContract.MovieEntry.TABLE_NAME,
                         projection,
-                        sMovieSelection,
+                        MovieContract.sMovieSelection,
                         new String[]{Long.toString(MovieContract.MovieEntry.getIDFromUri(uri))},
                         null,
                         null,
@@ -181,7 +155,7 @@ public class MovieProvider extends ContentProvider {
             case TOP_RATED_MOVIES: {
                 retCursor = sSortedMoviesListQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                         projection,
-                        sSortCriteriaMovieSelection,
+                        MovieContract.sSortCriteriaMovieSelection,
                         new String[]{MovieContract.FILTER_TOP_RATED},
                         null,
                         null,
@@ -193,7 +167,7 @@ public class MovieProvider extends ContentProvider {
             case POPULAR_MOVIES: {
                 retCursor = sSortedMoviesListQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                         projection,
-                        sSortCriteriaMovieSelection,
+                        MovieContract.sSortCriteriaMovieSelection,
                         new String[]{MovieContract.FILTER_POPULAR},
                         null,
                         null,
@@ -330,8 +304,8 @@ public class MovieProvider extends ContentProvider {
                 }
 
                 for(Integer id : ids) {
-                    int movieDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, sMovieSelection, new String[]{id.toString()});
-                    int sortDeleted = db.delete(MovieContract.SortEntry.TABLE_NAME, sSortForMovieSelection, new String[]{id.toString()});
+                    int movieDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, MovieContract.sMovieSelection, new String[]{id.toString()});
+                    int sortDeleted = db.delete(MovieContract.SortEntry.TABLE_NAME, MovieContract.sSortForMovieSelection, new String[]{id.toString()});
 
                     rowsDeleted += (movieDeleted == 1 && sortDeleted == 1) ? 1 : 0;
                 }
@@ -340,7 +314,7 @@ public class MovieProvider extends ContentProvider {
             case POPULAR_MOVIES: {
                 Cursor cursor = sSortedMoviesListQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                         null,
-                        sSortCriteriaMovieSelection,
+                        MovieContract.sSortCriteriaMovieSelection,
                         new String[]{MovieContract.FILTER_POPULAR},
                         null,
                         null,
@@ -357,8 +331,8 @@ public class MovieProvider extends ContentProvider {
                 }
 
                 for(Integer id : ids) {
-                    int movieDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, sMovieSelection, new String[]{id.toString()});
-                    int sortDeleted = db.delete(MovieContract.SortEntry.TABLE_NAME, sSortForMovieSelection, new String[]{id.toString()});
+                    int movieDeleted = db.delete(MovieContract.MovieEntry.TABLE_NAME, MovieContract.sMovieSelection, new String[]{id.toString()});
+                    int sortDeleted = db.delete(MovieContract.SortEntry.TABLE_NAME, MovieContract.sSortForMovieSelection, new String[]{id.toString()});
 
                     rowsDeleted += (movieDeleted == 1 && sortDeleted == 1) ? 1 : 0;
                 }

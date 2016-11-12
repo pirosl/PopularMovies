@@ -157,4 +157,35 @@ public class MovieContract {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
     }
+
+
+    //movie._id = ?
+    public static final String sMovieSelection =
+            MovieContract.MovieEntry.TABLE_NAME +
+                    "." + MovieContract.MovieEntry._ID + " = ? ";
+
+    //movie.favourite = ?
+    public static final String sFavouriteMoviesSelection =
+            MovieContract.MovieEntry.TABLE_NAME +
+                    "." + MovieContract.MovieEntry.COLUMN_FAVOURITE + " = ? ";
+
+    //trailer.movie_id = ?
+    public static final String sTrailersForMovieSelection =
+            MovieContract.TrailerEntry.TABLE_NAME +
+                    "." + MovieContract.TrailerEntry.COLUMN_MOVIE_KEY + " = ? ";
+
+    //review.movie_id = ?
+    public static final String sReviewsForMovieSelection =
+            MovieContract.ReviewEntry.TABLE_NAME +
+                    "." + MovieContract.ReviewEntry.COLUMN_MOVIE_KEY + " = ? ";
+
+    //sort.movie_id = ?
+    public static final String sSortForMovieSelection =
+            MovieContract.SortEntry.TABLE_NAME +
+                    "." + MovieContract.SortEntry.COLUMN_MOVIE_KEY + " = ? ";
+
+    //sort.sort_criteria = ?
+    public static final String sSortCriteriaMovieSelection =
+            MovieContract.SortEntry.TABLE_NAME +
+                    "." + MovieContract.SortEntry.COLUMN_SORT_CRITERIA + " = ? ";
 }

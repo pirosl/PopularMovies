@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * StringRequest class to be used with Volley
+ * StringRequest class to be used with Volley. Handles requests for Popular and Top_Rated moviesß
  *
  * @author Lucian Piros
  * @version 1.0

@@ -2,13 +2,11 @@ package com.piros.lucian.popularmovies.sync;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.AlertDialog;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SyncRequest;
 import android.content.SyncResult;
 import android.database.Cursor;
@@ -26,6 +24,7 @@ import com.android.volley.toolbox.Volley;
 import com.piros.lucian.popularmovies.BuildConfig;
 import com.piros.lucian.popularmovies.R;
 import com.piros.lucian.popularmovies.data.MovieContract;
+import com.piros.lucian.popularmovies.sync.volley.VolleyMovieDBInfoStringRequest;
 import com.piros.lucian.popularmovies.sync.volley.VolleyMovieDBStringRequest;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -55,6 +54,7 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
     // 60 seconds (1 minute) * 60 = 1 hour
     public static final int SYNC_INTERVAL = 60 * 60;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL / 3;
+
 
     // Picasso accepts only weak references make - so we save them to make sure application works correctly
     private Map<String, PicassoMovieTarget> picassoMovieTargets;
@@ -115,6 +115,7 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
                         JSONObject movie = movies.optJSONObject(loop);
                         ContentValues contentValues = new ContentValues();
                         contentValues.put(MovieContract.MovieEntry.COLUMN_TITLE, movie.getString("original_title"));
+                        contentValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, movie.getInt("id"));
                         contentValues.put(MovieContract.MovieEntry.COLUMN_SYNOPSIS, movie.getString("overview"));
                         contentValues.put(MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL_PATH, movie.getString("poster_path"));
                         contentValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, movie.getString("release_date"));
@@ -129,7 +130,7 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
                     vContentValue.toArray(contentValuesArray);
                     int noOfInsertedValues = getContext().getContentResolver().bulkInsert(buildFilteredMoviesUri(filter), contentValuesArray);
 
-                    Log.d(LOG_TAG, "Insert  " + noOfInsertedValues + " items in local database");
+                    Log.d(LOG_TAG, "Insert  " + noOfInsertedValues + " items in movie table in local database");
 
                     // get movies back so we can download the thumbnails
                     // A cursor is your primary interface to the query results.
@@ -146,7 +147,11 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
                     int count = 1;
                     do {
                         String movieTitle = (String) cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE));
-                        PicassoMovieTarget movieTarget = new PicassoMovieTarget(cursor.getLong(cursor.getColumnIndex(MovieContract.MovieEntry._ID)), movieTitle);
+
+                        long _movieID = cursor.getLong(cursor.getColumnIndex(MovieContract.MovieEntry._ID));
+                        long movieDBId = cursor.getLong(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_MOVIE_ID));
+
+                        PicassoMovieTarget movieTarget = new PicassoMovieTarget(_movieID, movieDBId, movieTitle);
                         if (!picassoMovieTargets.containsKey(movieTitle)) {
                             picassoMovieTargets.put(movieTitle, movieTarget); // make sure we keep a refference to movie target as Picasso only works with weak refferences
                         }
@@ -166,19 +171,11 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
         };
 
         // Error response listener
-        // Display an AlertDialog with an error message
+        // Display an error message
         Response.ErrorListener errorListener = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                new AlertDialog.Builder(getContext())
-                        .setTitle(getContext().getResources().getString(R.string.network_error_alertdialog_title))
-                        .setMessage(getContext().getResources().getString(R.string.network_error_alertdialog_body))
-                        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                            }
-                        })
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .show();
+                Log.d(LOG_TAG, "Fetching movies error " + error.toString());
             }
         };
 
@@ -189,8 +186,63 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
 
 
     /**
-     * Copied from Sunshine project within Udacity Android Developer Nanodegree program
+     * Fetch movie trailers from TheMovieDB database.  Use Volley to handle and manage network requests.
+     * Movies are fetched based on sort type.
      *
+     * @param _movieId id of the movie for which trailers are requested
+     */
+    public void fetchMovieTrailers(final long _movieId, final long movieDBId) {
+        // Success response listener
+        // on success return populate the ArrayAdapter with received data
+        Response.Listener<String> responseListener = new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+                try {
+                    Vector<ContentValues> vContentValue = new Vector();
+
+                    JSONObject jsonResponse = new JSONObject(response);
+                    JSONArray trailers = jsonResponse.getJSONArray("results");
+                    for (int loop = 0; loop < trailers.length(); ++loop) {
+                        JSONObject trailer = trailers.optJSONObject(loop);
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put(MovieContract.TrailerEntry.COLUMN_MOVIE_KEY, _movieId);
+                        contentValues.put(MovieContract.TrailerEntry.COLUMN_YOUTUBE_KEY, trailer.getString("key"));
+                        // for now put just generic trailer as trailer name
+                        contentValues.put(MovieContract.TrailerEntry.COLUMN_TRAILER_DESCRIPTION, "Trailer " + new Integer(loop+1).toString());
+                        vContentValue.add(contentValues);
+                    }
+
+                    // insert into database
+                    ContentValues[] contentValuesArray = new ContentValues[vContentValue.size()];
+                    vContentValue.toArray(contentValuesArray);
+                    int noOfInsertedValues = getContext().getContentResolver().bulkInsert(MovieContract.TrailerEntry.CONTENT_URI, contentValuesArray);
+
+                    Log.d(LOG_TAG, "Insert  " + noOfInsertedValues + " items in trailers table local database");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        };
+
+        // Error response listener
+        // Display an error message
+        Response.ErrorListener errorListener = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(LOG_TAG, "Fetching movies trailers error " + error.toString());
+            }
+        };
+
+        VolleyMovieDBInfoStringRequest movieDBInfoStringRequest = new VolleyMovieDBInfoStringRequest(movieDBId, BuildConfig.THEMOVIEDB_TRAILERS, responseListener, errorListener);
+        movieDBInfoStringRequest.setTag(VOLLEY_TAG);// + "." + BuildConfig.THEMOVIEDB_TRAILERS + "." + new Long(_movieId).toString());
+        queue.add(movieDBInfoStringRequest);
+    }
+
+    /**
+     * Copied from Sunshine project within Udacity Android Developer Nanodegree program
+     * <p>
      * Helper method to get the fake account to be used with SyncAdapter, or make a new one
      * if the fake account doesn't exist yet.  If we make a new account, we call the
      * onAccountCreated method so we can initialize things.
@@ -208,36 +260,28 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
                 context.getString(R.string.app_name), context.getString(R.string.sync_account_type));
 
         // If the password doesn't exist, the account doesn't exist
-        if ( null == accountManager.getPassword(newAccount) ) {
+        if (null == accountManager.getPassword(newAccount)) {
 
-        /*
-         * Add the account and account type, no password or user data
-         * If successful, return the Account object, otherwise report an error.
-         */
+            /*
+             * Add the account and account type, no password or user data
+             * If successful, return the Account object, otherwise report an error.
+             */
             if (!accountManager.addAccountExplicitly(newAccount, "", null)) {
                 return null;
             }
             /*
-             * If you don't set android:syncable="true" in
-             * in your <provider> element in the manifest,
-             * then call ContentResolver.setIsSyncable(account, AUTHORITY, 1)
-             * here.
-             */
-
-            //onAccountCreated(newAccount, context);
-            /*
-         * Since we've created an account
-         */
+            * Since we've created an account
+            */
             MovieDBSyncAdapter.configurePeriodicSync(context, SYNC_INTERVAL, SYNC_FLEXTIME);
 
-        /*
-         * Without calling setSyncAutomatically, our periodic sync will not be enabled.
-         */
+            /*
+             * Without calling setSyncAutomatically, our periodic sync will not be enabled.
+             */
             ContentResolver.setSyncAutomatically(newAccount, context.getString(R.string.content_authority), true);
 
-        /*
-         * Finally, let's do a sync to get things started
-         */
+            /*
+             * Finally, let's do a sync to get things started
+             */
             syncImmediately(context);
         }
         return newAccount;
@@ -245,7 +289,7 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
 
     /**
      * Copied from Sunshine project within Udacity Android Developer Nanodegree program
-     *
+     * <p>
      * Helper method to schedule the sync adapter periodic execution
      */
     public static void configurePeriodicSync(Context context, int syncInterval, int flexTime) {
@@ -266,8 +310,9 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
 
     /**
      * Copied from Sunshine project within Udacity Android Developer Nanodegree program
-     *
+     * <p>
      * Helper method to have the sync adapter sync immediately
+     *
      * @param context The context used to access the account service
      */
     public static void syncImmediately(Context context) {
@@ -276,24 +321,6 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         ContentResolver.requestSync(getSyncAccount(context),
                 context.getString(R.string.content_authority), bundle);
-    }
-
-
-    private static void onAccountCreated(Account newAccount, Context context) {
-        /*
-         * Since we've created an account
-         */
-        MovieDBSyncAdapter.configurePeriodicSync(context, SYNC_INTERVAL, SYNC_FLEXTIME);
-
-        /*
-         * Without calling setSyncAutomatically, our periodic sync will not be enabled.
-         */
-        ContentResolver.setSyncAutomatically(newAccount, context.getString(R.string.content_authority), true);
-
-        /*
-         * Finally, let's do a sync to get things started
-         */
-        syncImmediately(context);
     }
 
     public static void initializeSyncAdapter(Context context) {
@@ -308,9 +335,11 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
     private class PicassoMovieTarget implements Target {
         private long _id;
         private String movieTitle;
+        private long movieDBId;
 
-        public PicassoMovieTarget(long _id, String movieTitle) {
+        public PicassoMovieTarget(long _id, long movieDBId, String movieTitle) {
             this._id = _id;
+            this.movieDBId = movieDBId;
             this.movieTitle = movieTitle;
         }
 
@@ -332,6 +361,9 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
 
             // no need to keep the refference any longer
             picassoMovieTargets.remove(movieTitle);
+
+            // we have the image, we can load the trailers
+            fetchMovieTrailers(_id, movieDBId);
         }
 
         @Override
@@ -349,6 +381,9 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
             getContext().getContentResolver().update(
                     MovieContract.MovieEntry.CONTENT_URI, updateValues, MovieContract.MovieEntry._ID + "= ?",
                     new String[]{Long.toString(_id)});
+
+            // we have the image, we can load the trailers
+            fetchMovieTrailers(_id, movieDBId);
         }
 
         @Override
