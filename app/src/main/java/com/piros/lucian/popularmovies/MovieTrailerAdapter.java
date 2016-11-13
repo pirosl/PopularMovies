@@ -13,11 +13,8 @@ import com.piros.lucian.popularmovies.data.MovieContract;
 /**
  * Cursor adapter. Provides a list of movies trailers
  *
- * Changed MovieAdapter during Popular Movies, Stage 2.
- * Changed Adapter from being an ArrayAdapter to being a CursorAdapter
- *
  * @author Lucian Piros
- * @version 1.0
+ * @version 1.1
  */
 public class MovieTrailerAdapter extends CursorAdapter {
 
