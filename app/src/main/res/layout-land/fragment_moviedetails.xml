@@ -24,7 +24,8 @@
                 android:id="@+id/movieposter"
                 style="@style/ImageView"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+                android:layout_height="wrap_content"
+                android:layout_weight="0.2" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -53,7 +54,7 @@
                 <TextView
                     android:id="@+id/moviesynopsis"
                     style="@style/Body"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </LinearLayout>
         </LinearLayout>
