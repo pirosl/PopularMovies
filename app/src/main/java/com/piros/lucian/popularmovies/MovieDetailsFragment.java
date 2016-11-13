@@ -1,5 +1,6 @@
 package com.piros.lucian.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
@@ -29,6 +30,7 @@ import java.util.StringTokenizer;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * Movie details Fragment
@@ -46,6 +48,8 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
 
     static final String DETAIL_MOVIE = "MOVIE";
 
+    private long mMovieId;
+
     @BindView(R.id.movietitle)
     TextView movieTitle;
     @BindView(R.id.movieposter)
@@ -62,6 +66,8 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
     @BindView(R.id.listview_moviereviews)
     ListView movieReviewsListView;
     private MovieReviewAdapter mMovieReviewAdapter;
+    @BindView(R.id.moviefavouriteicon)
+    ImageView movieFavouriteIcon;
 
     private Uri mMovieUri;
     private static final String[] MOVIE_COLUMNS = {
@@ -123,8 +129,33 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
         Assert.assertNotNull(movieSynopsis);
         Assert.assertNotNull(movieTrailersGridView);
         Assert.assertNotNull(movieReviewsListView);
+        Assert.assertNotNull(movieFavouriteIcon);
+
+        movieFavouriteIcon.setTag(new Boolean(false));
 
         return detailsView;
+    }
+
+    @OnClick(R.id.moviefavouriteicon)
+    public void onClick(View v) {
+        Boolean favourite = (Boolean)v.getTag();
+        ContentValues updatedValues = new ContentValues();
+        updatedValues.put(MovieContract.MovieEntry._ID, mMovieId);
+
+        if(favourite) {
+            movieFavouriteIcon.setImageResource(R.drawable.set_favourite);
+            updatedValues.put(MovieContract.MovieEntry.COLUMN_FAVOURITE, 0);
+        }
+        else {
+            movieFavouriteIcon.setImageResource(R.drawable.favourite);
+            updatedValues.put(MovieContract.MovieEntry.COLUMN_FAVOURITE, 1);
+        }
+
+        v.setTag(!favourite);
+
+        getContext().getContentResolver().update(
+                MovieContract.MovieEntry.CONTENT_URI, updatedValues, MovieContract.MovieEntry._ID + "= ?",
+                new String[]{Long.toString(mMovieId)});
     }
 
     @Override
@@ -185,6 +216,8 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
         int loaderId = loader.getId();
         if (MOVIE_DETAILS_LOADER_ID == loaderId) {
             if (data != null && data.moveToFirst()) {
+                // Save movie id
+                mMovieId = data.getLong(COL_MOVIE_MOVIE_ID);
 
                 // Set Movie Title
                 movieTitle.setText(data.getString(COL_MOVIE_TITLE));
@@ -210,6 +243,18 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
 
                 // Set user rating - as we only use 5 stars half the value received from database
                 userRating.setRating((float) data.getFloat(COL_MOVIE_USER_RATING) / 2.0f);
+
+                // Check if this is a favourite movie
+                int vFavourite = data.getInt(COL_MOVIE_FAVOURITE);
+                Boolean favourite = new Boolean(vFavourite == 1);
+
+                if(favourite) {
+                    movieFavouriteIcon.setImageResource(R.drawable.favourite);
+                }
+                else {
+                    movieFavouriteIcon.setImageResource(R.drawable.set_favourite);
+                }
+                movieFavouriteIcon.setTag(favourite);
 
                 // Set movie synopsis
                 movieSynopsis.setText(data.getString(COL_MOVIE_SYNOPSIS));
