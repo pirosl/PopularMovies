@@ -4,6 +4,8 @@ package com.piros.lucian.popularmovies;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
@@ -60,6 +62,18 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
          * DetailFragmentCallback for when an item has been selected.
          */
         public void onItemSelected(Uri movieUri);
+    }
+
+    /**
+     * A callback interface that all activities containing this fragment must
+     * implement. This mechanism allows fragment to check whether or not there is
+     * a MasterDetail flow implementation.
+     */
+    public interface FlowInformation {
+        /**
+         * Returns TRUE is current app setup is master details flow
+         */
+        public boolean isMasterDetailFlow();
     }
 
     public MoviePostersFragment() {
@@ -166,6 +180,16 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
             // If we don't need to restart the loader, and there's a desired position to restore
             // to, do so now.
             gridviewMoviePosters.smoothScrollToPosition(mPosition);
+        }
+        else {
+            Handler handler = new Handler(){
+                @Override
+                public void handleMessage(Message msg) {
+                    if(((FlowInformation)getActivity()).isMasterDetailFlow())
+                        gridviewMoviePosters.performItemClick(gridviewMoviePosters, 0, gridviewMoviePosters.getItemIdAtPosition(0));
+                }
+            };
+            handler.sendEmptyMessage(0);
         }
     }
 

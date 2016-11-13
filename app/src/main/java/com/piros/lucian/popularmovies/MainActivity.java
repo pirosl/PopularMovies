@@ -15,7 +15,7 @@ import com.piros.lucian.popularmovies.sync.MovieDBSyncAdapter;
  * @author Lucian Piros
  * @version 1.0
  */
-public class MainActivity extends AppCompatActivity implements MoviePostersFragment.Callback {
+public class MainActivity extends AppCompatActivity implements MoviePostersFragment.Callback, MoviePostersFragment.FlowInformation {
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
 
@@ -83,5 +83,10 @@ public class MainActivity extends AppCompatActivity implements MoviePostersFragm
             intent.putExtra(getResources().getString(R.string.activity_extra_param), movieUri);
             startActivity(intent);
         }
+    }
+
+    @Override
+    public boolean isMasterDetailFlow() {
+        return mMasterDetailFlow;
     }
 }
