@@ -35,11 +35,26 @@
                 android:orientation="vertical"
                 android:paddingLeft="@dimen/layout_horizontal_margin">
 
-                <TextView
-                    android:id="@+id/releasedate"
-                    style="@style/Header"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/releasedate"
+                        style="@style/Header"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1" />
+
+                    <ImageView
+                        android:id="@+id/moviefavouriteicon"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:layout_gravity="center_vertical"
+                        android:src="@drawable/set_favourite" />
+                </LinearLayout>
 
                 <RatingBar
                     android:id="@+id/userrating"
@@ -51,12 +66,14 @@
                     android:paddingBottom="@dimen/layout_vertical_padding"
                     android:stepSize="0.02" />
 
+
                 <TextView
                     android:id="@+id/moviesynopsis"
                     style="@style/Body"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </LinearLayout>
+
         </LinearLayout>
 
         <LinearLayout
@@ -70,17 +87,19 @@
                 android:layout_height="1dip"
 
                 android:background="@android:color/black" />
+
             <TextView
                 style="@style/Header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/label_activity_movie_trailer"/>
+                android:text="@string/label_activity_movie_trailer" />
+
             <GridView
                 android:id="@+id/gridview_movietrailers"
+                style="@style/MoviesGridView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:numColumns="auto_fit"
-                style="@style/MoviesGridView" />
+                android:numColumns="auto_fit" />
         </LinearLayout>
 
         <LinearLayout
