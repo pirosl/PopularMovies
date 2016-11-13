@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -41,6 +42,7 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
 
     private static final int MOVIE_DETAILS_LOADER_ID = 0;
     private static final int MOVIE_TRAILERS_LOADER_ID = 1;
+    private static final int MOVIE_REVIEWS_LOADER_ID = 2;
 
     static final String DETAIL_MOVIE = "MOVIE";
 
@@ -57,6 +59,9 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
     @BindView(R.id.gridview_movietrailers)
     GridView movieTrailersGridView;
     private MovieTrailerAdapter mMovieTrailerAdapter;
+    @BindView(R.id.listview_moviereviews)
+    ListView movieReviewsListView;
+    private MovieReviewAdapter mMovieReviewAdapter;
 
     private Uri mMovieUri;
     private static final String[] MOVIE_COLUMNS = {
@@ -69,12 +74,6 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
             MovieContract.MovieEntry.TABLE_NAME + "." + MovieContract.MovieEntry.COLUMN_IMAGE_THUMBNAIL
     };
 
-    private static final String[] TRAILER_COLUMNS = {
-            MovieContract.TrailerEntry.TABLE_NAME + "." + MovieContract.TrailerEntry._ID,
-            MovieContract.TrailerEntry.TABLE_NAME + "." + MovieContract.TrailerEntry.COLUMN_TRAILER_DESCRIPTION,
-            MovieContract.TrailerEntry.TABLE_NAME + "." + MovieContract.TrailerEntry.COLUMN_YOUTUBE_KEY
-    };
-
     static final int COL_MOVIE_MOVIE_ID = 0;
     static final int COL_MOVIE_TITLE = 1;
     static final int COL_MOVIE_SYNOPSIS = 2;
@@ -83,9 +82,27 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
     static final int COL_MOVIE_FAVOURITE = 5;
     static final int COL_MOVIE_IMAGE_THUMBNAIL = 6;
 
+    private static final String[] TRAILER_COLUMNS = {
+            MovieContract.TrailerEntry.TABLE_NAME + "." + MovieContract.TrailerEntry._ID,
+            MovieContract.TrailerEntry.TABLE_NAME + "." + MovieContract.TrailerEntry.COLUMN_TRAILER_DESCRIPTION,
+            MovieContract.TrailerEntry.TABLE_NAME + "." + MovieContract.TrailerEntry.COLUMN_YOUTUBE_KEY
+    };
+
     static final int COL_TRAILER_TRAILER_ID = 0;
     static final int COL_TRAILER_DESCRIPTION = 1;
     static final int COL_TRAILER_YOUTUBE_KEY = 2;
+
+    private static final String[] REVIEW_COLUMNS = {
+            MovieContract.ReviewEntry.TABLE_NAME + "." + MovieContract.ReviewEntry._ID,
+            MovieContract.ReviewEntry.TABLE_NAME + "." + MovieContract.ReviewEntry.COLUMN_AUTHOR,
+            MovieContract.ReviewEntry.TABLE_NAME + "." + MovieContract.ReviewEntry.COLUMN_CONTENT,
+            MovieContract.ReviewEntry.TABLE_NAME + "." + MovieContract.ReviewEntry.COLUMN_URL
+    };
+
+    static final int COL_REVIEW_REVIEW_ID = 0;
+    static final int COL_REVIEW_AUTHOR = 1;
+    static final int COL_REVIEW_CONTENT = 2;
+    static final int COL_REVIEW_URL = 3;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -105,6 +122,7 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
         Assert.assertNotNull(userRating);
         Assert.assertNotNull(movieSynopsis);
         Assert.assertNotNull(movieTrailersGridView);
+        Assert.assertNotNull(movieReviewsListView);
 
         return detailsView;
     }
@@ -133,7 +151,7 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
                     );
                 }
                 break;
-            case MOVIE_TRAILERS_LOADER_ID:
+            case MOVIE_TRAILERS_LOADER_ID: {
                 long _movieId = MovieContract.MovieEntry.getIDFromUri(mMovieUri);
                 cursor = new CursorLoader(
                         getActivity(),
@@ -144,6 +162,19 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
                         null
                 );
                 break;
+            }
+            case MOVIE_REVIEWS_LOADER_ID: {
+                long _movieId = MovieContract.MovieEntry.getIDFromUri(mMovieUri);
+                cursor = new CursorLoader(
+                        getActivity(),
+                        MovieContract.ReviewEntry.CONTENT_URI,
+                        REVIEW_COLUMNS,
+                        MovieContract.sReviewsForMovieSelection,
+                        new String[]{new Long(_movieId).toString()},
+                        null
+                );
+                break;
+            }
         }
 
         return cursor;
@@ -183,10 +214,15 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
                 // Set movie synopsis
                 movieSynopsis.setText(data.getString(COL_MOVIE_SYNOPSIS));
 
-                // Instantiate the custom MovieAdapte
+                // Instantiate the custom MovieTrailerAdapter
                 mMovieTrailerAdapter = new MovieTrailerAdapter(getActivity(), null, 0);
                 movieTrailersGridView.setAdapter(mMovieTrailerAdapter);
 
+                // Instantiate the custom MovieReviewAdapter
+                mMovieReviewAdapter = new MovieReviewAdapter(getActivity(), null, 0);
+                movieReviewsListView.setAdapter(mMovieReviewAdapter);
+
+                // init loader manager for trailers
                 getLoaderManager().initLoader(MOVIE_TRAILERS_LOADER_ID, null, this);
             }
         }
@@ -199,6 +235,24 @@ public class MovieDetailsFragment extends Fragment implements LoaderManager.Load
                                                                  Cursor cursor = (Cursor) parent.getItemAtPosition(position);
                                                                  if (cursor != null) {
                                                                      startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(BuildConfig.YOUTUBE_LINK + cursor.getString(cursor.getColumnIndex(MovieContract.TrailerEntry.COLUMN_YOUTUBE_KEY)))));
+                                                                 }
+                                                             }
+                                                         }
+            );
+
+            // init loader manager for reviews
+            getLoaderManager().initLoader(MOVIE_REVIEWS_LOADER_ID, null, this);
+        }
+
+        if (MOVIE_REVIEWS_LOADER_ID == loaderId) {
+            mMovieReviewAdapter.swapCursor(data);
+
+            movieReviewsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                                             @Override
+                                                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                                                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
+                                                                 if (cursor != null) {
+                                                                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(cursor.getString(cursor.getColumnIndex(MovieContract.ReviewEntry.COLUMN_URL)))));
                                                                  }
                                                              }
                                                          }

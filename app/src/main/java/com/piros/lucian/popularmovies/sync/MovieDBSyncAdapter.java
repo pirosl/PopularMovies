@@ -148,8 +148,8 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
                     do {
                         String movieTitle = (String) cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE));
 
-                        long _movieID = cursor.getLong(cursor.getColumnIndex(MovieContract.MovieEntry._ID));
-                        long movieDBId = cursor.getLong(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_MOVIE_ID));
+                        final long _movieID = cursor.getLong(cursor.getColumnIndex(MovieContract.MovieEntry._ID));
+                        final long movieDBId = cursor.getLong(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_MOVIE_ID));
 
                         PicassoMovieTarget movieTarget = new PicassoMovieTarget(_movieID, movieDBId, movieTitle);
                         if (!picassoMovieTargets.containsKey(movieTitle)) {
@@ -161,6 +161,36 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
                                 .placeholder(R.drawable.loading_image)
                                 .error(R.drawable.connectionerror)
                                 .into(movieTarget);
+
+                        // load movie trailers
+                        new Thread(new Runnable() {
+                            public void run() {
+                                try {
+                                    long _id = _movieID;
+                                    long _dbId = movieDBId;
+                                    // because there is a limited number of requests we can make per second to movieDB - wait a bit
+                                    Thread.sleep((long)(20000 * Math.random()));
+                                    fetchMovieTrailers(_id, _dbId);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).start();
+
+                        // load movie reviews
+                        new Thread(new Runnable() {
+                            public void run() {
+                                // because there is a limited number of requests we can make per second to movieDB - wait a bit
+                                try {
+                                    long _id = _movieID;
+                                    long _dbId = movieDBId;
+                                    Thread.sleep((long)(30000 * Math.random()));
+                                    fetchMovieReviews(_id, _dbId);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }).start();
                     } while (cursor.moveToNext());
                     cursor.close();
                 } catch (JSONException e) {
@@ -187,7 +217,6 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
 
     /**
      * Fetch movie trailers from TheMovieDB database.  Use Volley to handle and manage network requests.
-     * Movies are fetched based on sort type.
      *
      * @param _movieId id of the movie for which trailers are requested
      */
@@ -237,6 +266,61 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
 
         VolleyMovieDBInfoStringRequest movieDBInfoStringRequest = new VolleyMovieDBInfoStringRequest(movieDBId, BuildConfig.THEMOVIEDB_TRAILERS, responseListener, errorListener);
         movieDBInfoStringRequest.setTag(VOLLEY_TAG);// + "." + BuildConfig.THEMOVIEDB_TRAILERS + "." + new Long(_movieId).toString());
+        queue.add(movieDBInfoStringRequest);
+    }
+
+
+    /**
+     * Fetch movie reviews from TheMovieDB database.  Use Volley to handle and manage network requests.
+     *
+     * @param _movieId id of the movie for which trailers are requested
+     */
+    public void fetchMovieReviews(final long _movieId, final long movieDBId) {
+        // Success response listener
+        // on success return populate the ArrayAdapter with received data
+        Response.Listener<String> responseListener = new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+                try {
+                    Vector<ContentValues> vContentValue = new Vector();
+
+                    JSONObject jsonResponse = new JSONObject(response);
+                    JSONArray trailers = jsonResponse.getJSONArray("results");
+                    for (int loop = 0; loop < trailers.length(); ++loop) {
+                        JSONObject trailer = trailers.optJSONObject(loop);
+                        ContentValues contentValues = new ContentValues();
+                        contentValues.put(MovieContract.ReviewEntry.COLUMN_MOVIE_KEY, _movieId);
+                        contentValues.put(MovieContract.ReviewEntry.COLUMN_AUTHOR, trailer.getString("author"));
+                        contentValues.put(MovieContract.ReviewEntry.COLUMN_CONTENT, trailer.getString("content"));
+                        contentValues.put(MovieContract.ReviewEntry.COLUMN_URL, trailer.getString("url"));
+                        vContentValue.add(contentValues);
+                    }
+
+                    // insert into database
+                    ContentValues[] contentValuesArray = new ContentValues[vContentValue.size()];
+                    vContentValue.toArray(contentValuesArray);
+                    int noOfInsertedValues = getContext().getContentResolver().bulkInsert(MovieContract.ReviewEntry.CONTENT_URI, contentValuesArray);
+
+                    Log.d(LOG_TAG, "Insert  " + noOfInsertedValues + " items in reviews table local database");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        };
+
+        // Error response listener
+        // Display an error message
+        Response.ErrorListener errorListener = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.d(LOG_TAG, "Fetching movies review error " + error.toString());
+            }
+        };
+
+        VolleyMovieDBInfoStringRequest movieDBInfoStringRequest = new VolleyMovieDBInfoStringRequest(movieDBId, BuildConfig.THEMOVIEDB_REVIEWS, responseListener, errorListener);
+        movieDBInfoStringRequest.setTag(VOLLEY_TAG);// + "." + BuildConfig.THEMOVIEDB_REVIEWS + "." + new Long(_movieId).toString());
         queue.add(movieDBInfoStringRequest);
     }
 
@@ -362,8 +446,10 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
             // no need to keep the refference any longer
             picassoMovieTargets.remove(movieTitle);
 
-            // we have the image, we can load the trailers
-            fetchMovieTrailers(_id, movieDBId);
+//            // we have the image, we can load the trailers
+//            fetchMovieTrailers(_id, movieDBId);
+//            // load reviews as well
+//            fetchMovieReviews(_id, movieDBId);
         }
 
         @Override
@@ -382,8 +468,10 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
                     MovieContract.MovieEntry.CONTENT_URI, updateValues, MovieContract.MovieEntry._ID + "= ?",
                     new String[]{Long.toString(_id)});
 
-            // we have the image, we can load the trailers
-            fetchMovieTrailers(_id, movieDBId);
+//            // we have the image, we can load the trailers
+//            fetchMovieTrailers(_id, movieDBId);
+//            // load reviews as well
+//            fetchMovieReviews(_id, movieDBId);
         }
 
         @Override

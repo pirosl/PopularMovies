@@ -82,5 +82,30 @@
                 android:numColumns="auto_fit"
                 style="@style/MoviesGridView" />
         </LinearLayout>
+
+        <LinearLayout
+            style="@style/LayoutMargins"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dip"
+                android:background="@android:color/black" />
+
+            <TextView
+                style="@style/Header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/label_activity_movie_reviews" />
+
+            <ListView
+                android:id="@+id/listview_moviereviews"
+                style="@style/MoviesReviewsListView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+
     </LinearLayout>
 </ScrollView>

@@ -6,6 +6,8 @@
     <string name="label_activity_trailer">Movie Trailer</string>
 
     <string name="label_activity_movie_trailer">Trailers:</string>
+    <string name="label_activity_movie_reviews">Reviews:</string>
+    <string name="label_activity_movie_review_item_title">Author:</string>
 
     <!-- Label for menu entries -->
     <string name="action_settings">Settings</string>
