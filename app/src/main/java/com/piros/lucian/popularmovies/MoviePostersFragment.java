@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ListView;
 
 import com.piros.lucian.popularmovies.data.MovieContract;
 
@@ -44,6 +45,10 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
     @BindView(R.id.gridview_movieposters)
     GridView gridviewMoviePosters;
     private MovieAdapter mMovieAdapter;
+
+    private int mPosition = GridView.INVALID_POSITION;
+
+    private static final String SELECTED_POSITION = "selected_position";
 
     /**
      * A callback interface that all activities containing this fragment must
@@ -78,6 +83,10 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
         mMovieAdapter = new MovieAdapter(getActivity(), null, 0);
         gridviewMoviePosters.setAdapter(mMovieAdapter);
 
+        if (savedInstanceState != null && savedInstanceState.containsKey(SELECTED_POSITION)) {
+            mPosition = savedInstanceState.getInt(SELECTED_POSITION);
+        }
+
         return rootView;
     }
 
@@ -91,6 +100,7 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
                     ));
         }
 
+        mPosition = position;
     }
 
     @Override
@@ -112,6 +122,14 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
     public void onActivityCreated(Bundle savedInstanceState) {
       //  getLoaderManager().initLoader(0, null, this);
         super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        if (mPosition != ListView.INVALID_POSITION) {
+            outState.putInt(SELECTED_POSITION, mPosition);
+        }
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -144,11 +162,11 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mMovieAdapter.swapCursor(data);
-//        if (mPosition != ListView.INVALID_POSITION) {
-//            // If we don't need to restart the loader, and there's a desired position to restore
-//            // to, do so now.
-//            mListView.smoothScrollToPosition(mPosition);
-//        }
+        if (mPosition != ListView.INVALID_POSITION) {
+            // If we don't need to restart the loader, and there's a desired position to restore
+            // to, do so now.
+            gridviewMoviePosters.smoothScrollToPosition(mPosition);
+        }
     }
 
     @Override
