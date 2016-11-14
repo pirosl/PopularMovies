@@ -28,6 +28,7 @@ public class MovieContract {
 
     public static final int POPULAR = 1;
     public static final int TOP_RATED = 2;
+    public static final int FAVORITE = 3;
 
     /* Inner class that defines the table contents of the movie table */
     public static final class MovieEntry implements BaseColumns {

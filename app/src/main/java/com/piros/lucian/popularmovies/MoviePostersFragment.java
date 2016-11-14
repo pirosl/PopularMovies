@@ -1,6 +1,8 @@
 package com.piros.lucian.popularmovies;
 
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -128,7 +131,9 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
         if (sortType.equalsIgnoreCase(getResources().getString(R.string.pref_sort_toprated))) {
             getLoaderManager().restartLoader(MovieContract.TOP_RATED, null, this);
         }
-
+        if (sortType.equalsIgnoreCase(getResources().getString(R.string.pref_sort_favorite))) {
+            getLoaderManager().restartLoader(MovieContract.FAVORITE, null, this);
+        }
         super.onResume();
     }
 
@@ -162,6 +167,10 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
             filter = MovieContract.FILTER_POPULAR;
         if (id == MovieContract.TOP_RATED)
             filter = MovieContract.FILTER_TOP_RATED;
+        if (id == MovieContract.FAVORITE) {
+            filter = MovieContract.FILTER_FAVOURITE;
+            sortOrder = null; //no need for sort order if Favorite movies
+        }
 
         Uri filteredMoviesUri = MovieContract.MovieEntry.buildFilteredMoviesUri(filter);
 
@@ -182,14 +191,37 @@ public class MoviePostersFragment extends Fragment implements LoaderManager.Load
             gridviewMoviePosters.smoothScrollToPosition(mPosition);
         }
         else {
-            Handler handler = new Handler(){
-                @Override
-                public void handleMessage(Message msg) {
-                    if(((FlowInformation)getActivity()).isMasterDetailFlow())
-                        gridviewMoviePosters.performItemClick(gridviewMoviePosters, 0, gridviewMoviePosters.getItemIdAtPosition(0));
-                }
-            };
-            handler.sendEmptyMessage(0);
+            if(data.getCount() > 0) {
+                Handler handler = new Handler() {
+                    @Override
+                    public void handleMessage(Message msg) {
+                        if (((FlowInformation) getActivity()).isMasterDetailFlow())
+                            gridviewMoviePosters.performItemClick(gridviewMoviePosters, 0, gridviewMoviePosters.getItemIdAtPosition(0));
+                    }
+                };
+                handler.sendEmptyMessage(0);
+            }
+            else {
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                        getContext());
+
+                // set dialog message
+                alertDialogBuilder
+                        .setMessage(getString(R.string.message_nofavorite))
+                        .setCancelable(false)
+                        .setPositiveButton(getString(R.string.okbuttoncapture),new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int id) {
+                                // if this button is clicked, go back to settings to select another filter option
+                                startActivity(new Intent(getActivity(), SettingsActivity.class));
+                            }
+                        });
+
+                // create alert dialog
+                AlertDialog alertDialog = alertDialogBuilder.create();
+
+                // show it
+                alertDialog.show();
+            }
         }
     }
 

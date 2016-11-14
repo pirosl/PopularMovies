@@ -37,7 +37,7 @@ public class TestURIMatcher extends AndroidTestCase {
         assertEquals("Error: The MOVIE WITH ID URI was matched incorrectly.",
                 testMatcher.match(TEST_MOVIE_WITH_ID), MovieProvider.MOVIE_WITH_ID);
         assertEquals("Error: The FAVOURITE MOVIE URI was matched incorrectly.",
-                testMatcher.match(TEST_FAVOURITE_MOVIE_DIR), MovieProvider.FAVOURITE_MOVIES);
+                testMatcher.match(TEST_FAVOURITE_MOVIE_DIR), MovieProvider.FAVORITE_MOVIES);
         assertEquals("Error: The TOP RATED MOVIE URI was matched incorrectly.",
                 testMatcher.match(TEST_TOP_RATED_MOVIE_DIR), MovieProvider.TOP_RATED_MOVIES);
         assertEquals("Error: The POPULAR MOVIE URI was matched incorrectly.",

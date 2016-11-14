@@ -10,9 +10,7 @@ import android.net.Uri;
 
 import java.util.Vector;
 
-import static com.piros.lucian.popularmovies.data.MovieContract.sMovieSelection;
 import static com.piros.lucian.popularmovies.data.MovieContract.sSortCriteriaMovieSelection;
-import static com.piros.lucian.popularmovies.data.MovieContract.sSortForMovieSelection;
 
 /**
  * Movie content provider. Manages access to persisted data within movies.db database
@@ -27,7 +25,7 @@ public class MovieProvider extends ContentProvider {
     private MovieDBHelper mOpenHelper;
 
     static final int MOVIE = 100;
-    static final int FAVOURITE_MOVIES = 101;
+    static final int FAVORITE_MOVIES = 101;
     static final int POPULAR_MOVIES = 102;
     static final int TOP_RATED_MOVIES = 103;
 
@@ -67,7 +65,7 @@ public class MovieProvider extends ContentProvider {
         matcher.addURI(authority, MovieContract.PATH_MOVIE, MOVIE);
         matcher.addURI(authority, MovieContract.PATH_MOVIE + "/#", MOVIE_WITH_ID);
 
-        matcher.addURI(authority, MovieContract.PATH_MOVIE + "/" + MovieContract.FILTER_FAVOURITE, FAVOURITE_MOVIES);
+        matcher.addURI(authority, MovieContract.PATH_MOVIE + "/" + MovieContract.FILTER_FAVOURITE, FAVORITE_MOVIES);
         matcher.addURI(authority, MovieContract.PATH_MOVIE + "/" + MovieContract.FILTER_TOP_RATED, TOP_RATED_MOVIES);
         matcher.addURI(authority, MovieContract.PATH_MOVIE + "/" + MovieContract.FILTER_POPULAR, POPULAR_MOVIES);
 
@@ -98,7 +96,7 @@ public class MovieProvider extends ContentProvider {
                 return MovieContract.MovieEntry.CONTENT_TYPE;
             case MOVIE_WITH_ID:
                 return MovieContract.MovieEntry.CONTENT_ITEM_TYPE;
-            case FAVOURITE_MOVIES:
+            case FAVORITE_MOVIES:
                 return MovieContract.MovieEntry.CONTENT_TYPE;
             case TOP_RATED_MOVIES:
                 return MovieContract.MovieEntry.CONTENT_TYPE;
@@ -145,6 +143,19 @@ public class MovieProvider extends ContentProvider {
                         projection,
                         MovieContract.sMovieSelection,
                         new String[]{Long.toString(MovieContract.MovieEntry.getIDFromUri(uri))},
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            // "movie/favorite"
+            case FAVORITE_MOVIES: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        MovieContract.MovieEntry.TABLE_NAME,
+                        projection,
+                        MovieContract.sFavouriteMoviesSelection,
+                        new String[]{"1"},
                         null,
                         null,
                         sortOrder
