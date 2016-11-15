@@ -139,7 +139,7 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
                             null, // leaving "columns" null just returns all the columns.
                             null, // cols for "where" clause
                             null, // values for "where" clause
-                            null/*MovieContract.SortEntry.COLUMN_INDEX + " ASC" */ // sort order == by DATE ASCENDING
+                            null  // sort order
                     );
 
                     // and let's make sure they match the ones we created
@@ -320,7 +320,7 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
         };
 
         VolleyMovieDBInfoStringRequest movieDBInfoStringRequest = new VolleyMovieDBInfoStringRequest(movieDBId, BuildConfig.THEMOVIEDB_REVIEWS, responseListener, errorListener);
-        movieDBInfoStringRequest.setTag(VOLLEY_TAG);// + "." + BuildConfig.THEMOVIEDB_REVIEWS + "." + new Long(_movieId).toString());
+        movieDBInfoStringRequest.setTag(VOLLEY_TAG);
         queue.add(movieDBInfoStringRequest);
     }
 
@@ -445,11 +445,6 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
 
             // no need to keep the refference any longer
             picassoMovieTargets.remove(movieTitle);
-
-//            // we have the image, we can load the trailers
-//            fetchMovieTrailers(_id, movieDBId);
-//            // load reviews as well
-//            fetchMovieReviews(_id, movieDBId);
         }
 
         @Override
@@ -467,11 +462,6 @@ public class MovieDBSyncAdapter extends AbstractThreadedSyncAdapter {
             getContext().getContentResolver().update(
                     MovieContract.MovieEntry.CONTENT_URI, updateValues, MovieContract.MovieEntry._ID + "= ?",
                     new String[]{Long.toString(_id)});
-
-//            // we have the image, we can load the trailers
-//            fetchMovieTrailers(_id, movieDBId);
-//            // load reviews as well
-//            fetchMovieReviews(_id, movieDBId);
         }
 
         @Override
